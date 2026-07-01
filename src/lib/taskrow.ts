@@ -18,6 +18,21 @@ function classifyRequestType(name: string): string {
   return 'Solicitação padrão';
 }
 
+export type Complexity = 'baixa' | 'media' | 'alta';
+
+function parseComplexity(tags: string | null | undefined): Complexity | null {
+  if (!tags) return null;
+  const normalize = (s: string) =>
+    s.toLowerCase().trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  for (const part of tags.split(',')) {
+    const name = normalize(part.split('|')[0] ?? '');
+    if (name.includes('baixa complexidade')) return 'baixa';
+    if (name.includes('media complexidade')) return 'media';
+    if (name.includes('alta complexidade')) return 'alta';
+  }
+  return null;
+}
+
 export interface TaskrowTask {
   TaskID: number;
   TaskNumber: number;
@@ -38,6 +53,7 @@ export interface TaskrowTask {
   ProductName: string | null;
   EffortEstimation: number;
   isSubtask: boolean;
+  Complexity: Complexity | null;
 }
 
 export interface TaskrowData {
@@ -67,6 +83,7 @@ function transformTask(raw: Record<string, unknown>): TaskrowTask {
     ProductName: raw.ProductName ? String(raw.ProductName) : null,
     EffortEstimation: Number(raw.EffortEstimation || 0),
     isSubtask: !!raw.ParentTaskID && Number(raw.ParentTaskID) > 0,
+    Complexity: parseComplexity(raw.Tags as string | null),
   };
 }
 

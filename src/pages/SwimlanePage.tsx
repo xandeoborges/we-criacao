@@ -7,6 +7,7 @@ import { type TaskrowTask } from '@/lib/taskrow';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
 } from '@/components/ui/dialog';
+import WorkloadBadge from '@/components/WorkloadBadge';
 
 const COLUMNS = [
   { key: 'atrasado', label: 'Atrasado',    color: '#FF4D6A', bg: 'rgba(255,77,106,0.08)' },
@@ -97,6 +98,12 @@ function Swimlane({ n, defaultOpen }: { n: NucleoStats; defaultOpen: boolean }) 
         {open ? <ChevronDown size={16} className="text-muted-foreground flex-shrink-0" /> : <ChevronRight size={16} className="text-muted-foreground flex-shrink-0" />}
         <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ background: n.cor }} />
         <span className="font-semibold text-sm text-foreground">{n.nome}</span>
+        <WorkloadBadge
+          alertLevel={n.alertLevel}
+          workloadScore={n.workloadScore}
+          capacity={n.capacity}
+          complexityBreakdown={n.complexityBreakdown}
+        />
         <span className="ml-1 text-xs text-muted-foreground">{n.total} abertas</span>
         {urgentCount > 0 && (
           <span className="ml-auto flex items-center gap-1 text-xs text-destructive font-medium">
