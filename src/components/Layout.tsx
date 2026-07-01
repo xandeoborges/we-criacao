@@ -1,6 +1,7 @@
 import { NavLink } from 'react-router-dom';
 import { LayoutDashboard, Rows3, RefreshCw } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
+import { useTaskrowData } from '@/hooks/useTaskrowData';
 
 const NAV = [
   { to: '/',         label: 'Overview', icon: LayoutDashboard },
@@ -9,6 +10,7 @@ const NAV = [
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const qc = useQueryClient();
+  const { dataUpdatedAt } = useTaskrowData();
 
   return (
     <div className="flex h-screen overflow-hidden">
@@ -42,7 +44,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         </nav>
 
         {/* Footer */}
-        <div className="px-5 py-4 border-t border-[hsl(var(--border))]">
+        <div className="px-5 py-4 border-t border-[hsl(var(--border))] space-y-1.5">
           <button
             onClick={() => qc.invalidateQueries({ queryKey: ['taskrow'] })}
             className="flex items-center gap-2 text-xs text-muted-foreground hover:text-primary transition-colors"
@@ -50,6 +52,15 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             <RefreshCw size={13} />
             Atualizar dados
           </button>
+          {dataUpdatedAt > 0 && (
+            <p className="text-[11px] text-muted-foreground/60 pl-[21px]">
+              Última atualização às{' '}
+              {new Date(dataUpdatedAt).toLocaleTimeString('pt-BR', {
+                hour: '2-digit',
+                minute: '2-digit',
+              })}
+            </p>
+          )}
         </div>
       </aside>
 
