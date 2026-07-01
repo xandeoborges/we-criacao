@@ -103,7 +103,7 @@ function WeekHeatBar({ n, columnMaxes }: { n: NucleoStats; columnMaxes: number[]
                 border: `1px solid ${count === 0 ? 'hsl(var(--border))' : heatColor(intensity, 0.4)}`,
               }}
             >
-              {count > 0 ? count : label}
+              {count > 0 ? count : ''}
             </div>
           );
         })}
