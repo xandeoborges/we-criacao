@@ -77,12 +77,12 @@ export default function CalendarioPage() {
   };
 
   if (isLoading) {
-    return <div className="p-8"><div className="skeleton-pulse rounded-xl h-96" /></div>;
+    return <div className="p-4 lg:p-8"><div className="skeleton-pulse rounded-xl h-96" /></div>;
   }
 
   if (error) {
     return (
-      <div className="p-8 flex items-center gap-3 text-destructive">
+      <div className="p-4 lg:p-8 flex items-center gap-3 text-destructive">
         <AlertTriangle size={20} />
         <span>Erro ao carregar dados: {error.message}</span>
       </div>
@@ -90,8 +90,8 @@ export default function CalendarioPage() {
   }
 
   return (
-    <div className="p-8 space-y-6" onClick={() => setTooltip(null)}>
-      <div className="flex items-start justify-between">
+    <div className="p-4 lg:p-8 space-y-6" onClick={() => setTooltip(null)}>
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-between">
         <div>
           <h2 className="text-2xl font-bold text-foreground">Calendário de Calor</h2>
           <p className="text-muted-foreground text-sm mt-1">Volume de entregas por dia — próximos 35 dias</p>
@@ -205,8 +205,8 @@ export default function CalendarioPage() {
       {/* Tooltip popup */}
       {tooltip && (
         <div
-          className="fixed z-50 glass-card p-4 w-72 shadow-xl"
-          style={{ top: Math.min(tooltip.y + 10, window.innerHeight - 250), left: Math.min(tooltip.x + 10, window.innerWidth - 300) }}
+          className="fixed z-50 glass-card p-4 w-64 sm:w-72 shadow-xl"
+          style={{ top: Math.min(tooltip.y + 10, window.innerHeight - 250), left: Math.min(tooltip.x + 10, window.innerWidth - 272) }}
           onClick={(e) => e.stopPropagation()}
         >
           <p className="text-xs text-muted-foreground mb-1">{tooltip.nucleo}</p>

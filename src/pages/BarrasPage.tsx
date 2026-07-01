@@ -84,12 +84,12 @@ function WeekHeatBar({ n, columnMaxes }: { n: NucleoStats; columnMaxes: number[]
   });
 
   return (
-    <div className="flex items-center gap-3">
-      <div className="w-36 text-sm font-medium text-foreground truncate flex items-center gap-2">
+    <div className="flex items-center gap-2 sm:gap-3">
+      <div className="w-16 sm:w-36 text-sm font-medium text-foreground truncate flex items-center gap-2">
         <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: n.cor }} />
         <span className="truncate">{n.nome}</span>
       </div>
-      <div className="flex-1 grid grid-cols-4 gap-1.5">
+      <div className="flex-1 grid grid-cols-4 gap-1 sm:gap-1.5">
         {weeks.map(({ label, count }, wi) => {
           const intensity = columnMaxes[wi] > 0 ? count / columnMaxes[wi] : 0;
           return (
@@ -118,7 +118,7 @@ export default function BarrasPage() {
 
   if (isLoading) {
     return (
-      <div className="p-8 grid grid-cols-3 gap-4">
+      <div className="p-4 lg:p-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {Array.from({ length: 6 }).map((_, i) => (
           <div key={i} className="skeleton-pulse rounded-xl h-52" />
         ))}
@@ -128,7 +128,7 @@ export default function BarrasPage() {
 
   if (error) {
     return (
-      <div className="p-8 flex items-center gap-3 text-destructive">
+      <div className="p-4 lg:p-8 flex items-center gap-3 text-destructive">
         <AlertTriangle size={20} />
         <span>Erro ao carregar dados: {error.message}</span>
       </div>
@@ -136,14 +136,14 @@ export default function BarrasPage() {
   }
 
   return (
-    <div className="p-8 space-y-6">
+    <div className="p-4 lg:p-8 space-y-6">
       <div>
         <h2 className="text-2xl font-bold text-foreground">Tarefas por Prazo</h2>
         <p className="text-muted-foreground text-sm mt-1">Volume aberto por intervalo de entrega, distribuído por núcleo</p>
       </div>
 
       {/* 2 × 3 grid */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {BUCKETS.map((b) => (
           <BucketCard
             key={b.key}
@@ -158,8 +158,8 @@ export default function BarrasPage() {
       </div>
 
       {/* Summary table */}
-      <div className="glass-card overflow-hidden">
-        <table className="w-full text-sm">
+      <div className="glass-card overflow-x-auto">
+        <table className="w-full text-sm min-w-[640px]">
           <thead>
             <tr className="border-b border-[hsl(var(--border))]">
               <th className="text-left px-4 py-3 text-muted-foreground font-medium">Núcleo</th>
@@ -200,14 +200,16 @@ export default function BarrasPage() {
           <Calendar size={16} className="text-muted-foreground" />
           <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Próximas 4 semanas</h3>
         </div>
-        <div className="glass-card p-5 space-y-3">
-          <div className="flex items-center gap-3 mb-1">
-            <div className="w-36" />
-            <div className="flex-1 grid grid-cols-4 gap-1.5 text-xs text-center text-muted-foreground">
-              <span>Semana 1</span>
-              <span>Semana 2</span>
-              <span>Semana 3</span>
-              <span>Semana 4</span>
+        <div className="glass-card p-3 sm:p-5 space-y-3">
+          <div className="flex items-center gap-2 sm:gap-3 mb-1">
+            <div className="w-16 sm:w-36" />
+            <div className="flex-1 grid grid-cols-4 gap-1 sm:gap-1.5 text-xs text-center text-muted-foreground">
+              {[1, 2, 3, 4].map((w) => (
+                <span key={w}>
+                  <span className="hidden sm:inline">Semana {w}</span>
+                  <span className="sm:hidden">S{w}</span>
+                </span>
+              ))}
             </div>
           </div>
           {(() => {

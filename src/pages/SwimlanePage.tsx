@@ -110,30 +110,32 @@ function Swimlane({ n, defaultOpen }: { n: NucleoStats; defaultOpen: boolean }) 
       </button>
 
       {open && (
-        <div className="grid grid-cols-5 gap-px bg-[hsl(var(--border))] border-t border-[hsl(var(--border))]">
-          {COLUMNS.map((col) => {
-            const tasks = tasksByCol[col.key];
-            return (
-              <div key={col.key} style={{ background: col.bg }}>
-                {/* Column header */}
-                <div
-                  className="px-3 py-2 border-b border-[hsl(var(--border))]"
-                  style={{ borderBottomColor: `${col.color}33` }}
-                >
-                  <p className="text-xs font-semibold" style={{ color: col.color }}>{col.label}</p>
-                  <p className="text-xs text-muted-foreground">{tasks.length} tarefa{tasks.length !== 1 ? 's' : ''}</p>
-                </div>
+        <div className="overflow-x-auto border-t border-[hsl(var(--border))]">
+          <div className="grid grid-cols-5 gap-px bg-[hsl(var(--border))] min-w-[720px]">
+            {COLUMNS.map((col) => {
+              const tasks = tasksByCol[col.key];
+              return (
+                <div key={col.key} style={{ background: col.bg }}>
+                  {/* Column header */}
+                  <div
+                    className="px-3 py-2 border-b border-[hsl(var(--border))]"
+                    style={{ borderBottomColor: `${col.color}33` }}
+                  >
+                    <p className="text-xs font-semibold" style={{ color: col.color }}>{col.label}</p>
+                    <p className="text-xs text-muted-foreground">{tasks.length} tarefa{tasks.length !== 1 ? 's' : ''}</p>
+                  </div>
 
-                {/* Tasks */}
-                <div className="p-2 space-y-2 min-h-20">
-                  {tasks.map((t) => <TaskCard key={t.TaskID} task={t} />)}
-                  {tasks.length === 0 && (
-                    <p className="text-[10px] text-muted-foreground/40 text-center py-4">—</p>
-                  )}
+                  {/* Tasks */}
+                  <div className="p-2 space-y-2 min-h-20">
+                    {tasks.map((t) => <TaskCard key={t.TaskID} task={t} />)}
+                    {tasks.length === 0 && (
+                      <p className="text-[10px] text-muted-foreground/40 text-center py-4">—</p>
+                    )}
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
       )}
     </div>
@@ -146,7 +148,7 @@ export default function SwimlanePage() {
 
   if (isLoading) {
     return (
-      <div className="p-8 space-y-4">
+      <div className="p-4 lg:p-8 space-y-4">
         {Array.from({ length: 3 }).map((_, i) => (
           <div key={i} className="skeleton-pulse rounded-xl h-16" />
         ))}
@@ -156,7 +158,7 @@ export default function SwimlanePage() {
 
   if (error) {
     return (
-      <div className="p-8 flex items-center gap-3 text-destructive">
+      <div className="p-4 lg:p-8 flex items-center gap-3 text-destructive">
         <AlertTriangle size={20} />
         <span>Erro ao carregar dados: {error.message}</span>
       </div>
@@ -164,7 +166,7 @@ export default function SwimlanePage() {
   }
 
   return (
-    <div className="p-8 space-y-4">
+    <div className="p-4 lg:p-8 space-y-4">
       <div>
         <h2 className="text-2xl font-bold text-foreground">Swimlane</h2>
         <p className="text-muted-foreground text-sm mt-1">Tarefas abertas por núcleo e prazo — clique num card para detalhes</p>
