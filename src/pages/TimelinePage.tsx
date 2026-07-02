@@ -16,9 +16,10 @@ function heatColor(intensity: number, alpha = 1): string {
 // ── Overview components ───────────────────────────────────────────────────────
 
 const WORKLOAD_WINDOWS: { key: WorkloadWindowKey; title: string; helper: string }[] = [
-  { key: 'hoje',   title: 'Hoje',        helper: 'Tarefas atrasadas + com prazo hoje vs. capacidade estimada do time.' },
-  { key: 'semana', title: 'Próximos 7 dias',  helper: 'Tarefas atrasadas + hoje + próximos 7 dias vs. capacidade estimada do time.' },
-  { key: 'mes',    title: 'Próximos 30 dias', helper: 'Tarefas atrasadas + hoje + próximos 30 dias vs. capacidade estimada do time.' },
+  { key: 'hoje',     title: 'Hoje',              helper: 'Tarefas atrasadas + com prazo hoje vs. capacidade estimada do time.' },
+  { key: 'semana',   title: 'Próximos 7 dias',   helper: 'Tarefas atrasadas + hoje + próximos 7 dias vs. capacidade estimada do time.' },
+  { key: 'quinzena', title: 'Próximos 15 dias',  helper: 'Tarefas atrasadas + hoje + próximos 15 dias vs. capacidade estimada do time.' },
+  { key: 'mes',      title: 'Próximos 30 dias',  helper: 'Tarefas atrasadas + hoje + próximos 30 dias vs. capacidade estimada do time.' },
 ];
 
 function WorkloadWindowChart({ title, helper, nucleos, windowKey }: {
@@ -218,7 +219,7 @@ export default function TimelinePage() {
       {/* Carga de Trabalho */}
       <div>
         <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">Carga de Trabalho</h3>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {WORKLOAD_WINDOWS.map((w) => (
             <WorkloadWindowChart key={w.key} title={w.title} helper={w.helper} nucleos={nucleos} windowKey={w.key} />
           ))}

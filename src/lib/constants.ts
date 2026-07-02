@@ -175,9 +175,10 @@ export const DEFAULT_COMPLEXITY_WEIGHT = 2; // tarefa sem tag de complexidade (p
 // Quantos pontos de carga (ponderados por complexidade) uma pessoa de peso 1.0 (Pleno) "aguenta"
 // em cada janela de tempo. Constantes independentes por janela — ajustáveis livremente.
 export const BASE_CAPACITY_BY_WINDOW = {
-  hoje: 1,    // atrasado + hoje
-  semana: 6,  // atrasado + hoje + próximos 7 dias
-  mes: 20,    // atrasado + hoje + próximos 30 dias
+  hoje: 1,      // atrasado + hoje
+  semana: 6,    // atrasado + hoje + próximos 7 dias
+  quinzena: 13, // atrasado + hoje + próximos 15 dias
+  mes: 20,      // atrasado + hoje + próximos 30 dias
 };
 
 export function getNucleoByLogin(login: string): string | null {

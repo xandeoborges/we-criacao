@@ -6,7 +6,7 @@ import {
 } from '@/lib/constants';
 
 export type AlertLevel = 'verde' | 'amarelo' | 'vermelho';
-export type WorkloadWindowKey = 'hoje' | 'semana' | 'mes';
+export type WorkloadWindowKey = 'hoje' | 'semana' | 'quinzena' | 'mes';
 
 export interface WorkloadWindow {
   workloadScore: number;   // soma do peso de complexidade das tarefas na janela
@@ -64,6 +64,7 @@ export function useNucleoData(openTasks: TaskrowTask[]): NucleoStats[] {
       const rawWorkload: Record<WorkloadWindowKey, { score: number; breakdown: { baixa: number; media: number; alta: number } }> = {
         hoje: { score: 0, breakdown: { baixa: 0, media: 0, alta: 0 } },
         semana: { score: 0, breakdown: { baixa: 0, media: 0, alta: 0 } },
+        quinzena: { score: 0, breakdown: { baixa: 0, media: 0, alta: 0 } },
         mes: { score: 0, breakdown: { baixa: 0, media: 0, alta: 0 } },
       };
 
@@ -83,7 +84,8 @@ export function useNucleoData(openTasks: TaskrowTask[]): NucleoStats[] {
 
         const isHoje = bucket === 'atrasado' || bucket === 'hoje';
         const isSemana = isHoje || bucket === 'semana';
-        const isMes = isSemana || bucket === 'quinzena' || bucket === 'mes';
+        const isQuinzena = isSemana || bucket === 'quinzena';
+        const isMes = isQuinzena || bucket === 'mes';
         const weight = t.Complexity ? COMPLEXITY_WEIGHT[t.Complexity] : DEFAULT_COMPLEXITY_WEIGHT;
 
         if (isHoje) {
@@ -93,6 +95,10 @@ export function useNucleoData(openTasks: TaskrowTask[]): NucleoStats[] {
         if (isSemana) {
           rawWorkload.semana.score += weight;
           if (t.Complexity) rawWorkload.semana.breakdown[t.Complexity]++;
+        }
+        if (isQuinzena) {
+          rawWorkload.quinzena.score += weight;
+          if (t.Complexity) rawWorkload.quinzena.breakdown[t.Complexity]++;
         }
         if (isMes) {
           rawWorkload.mes.score += weight;
@@ -114,6 +120,7 @@ export function useNucleoData(openTasks: TaskrowTask[]): NucleoStats[] {
       const workload: Record<WorkloadWindowKey, WorkloadWindow> = {
         hoje: buildWindow('hoje'),
         semana: buildWindow('semana'),
+        quinzena: buildWindow('quinzena'),
         mes: buildWindow('mes'),
       };
 
