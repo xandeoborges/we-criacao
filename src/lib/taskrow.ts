@@ -98,9 +98,31 @@ export async function fetchTaskrowTasks(): Promise<TaskrowData> {
   const data = await res.json();
   const entity = data.Entity;
 
+  const rawOpen = (entity.OpenTasks as unknown[]) || [];
+  const rawClosed = (entity.ClosedTasks as unknown[]) || [];
+  const rawDelayed = (entity.OpenTasksDelayed as unknown[]) || [];
+
+  // A Taskrow raramente aplica a tag de complexidade nas subtarefas — só na tarefa-pai.
+  // Por isso, subtarefas sem tag própria herdam a complexidade da sua tarefa-pai.
+  const complexityById = new Map<number, Complexity>();
+  for (const raw of [...rawOpen, ...rawClosed, ...rawDelayed]) {
+    const r = raw as Record<string, unknown>;
+    const c = parseComplexity(r.Tags as string | null);
+    if (c) complexityById.set(Number(r.TaskID), c);
+  }
+
+  const transform = (raw: Record<string, unknown>): TaskrowTask => {
+    const task = transformTask(raw);
+    if (!task.Complexity && task.isSubtask) {
+      const inherited = complexityById.get(Number(raw.ParentTaskID));
+      if (inherited) task.Complexity = inherited;
+    }
+    return task;
+  };
+
   return {
-    openTasks: ((entity.OpenTasks as unknown[]) || []).map((t) => transformTask(t as Record<string, unknown>)),
-    closedTasks: ((entity.ClosedTasks as unknown[]) || []).map((t) => transformTask(t as Record<string, unknown>)),
-    delayedTasks: ((entity.OpenTasksDelayed as unknown[]) || []).map((t) => transformTask(t as Record<string, unknown>)),
+    openTasks: rawOpen.map((t) => transform(t as Record<string, unknown>)),
+    closedTasks: rawClosed.map((t) => transform(t as Record<string, unknown>)),
+    delayedTasks: rawDelayed.map((t) => transform(t as Record<string, unknown>)),
   };
 }
