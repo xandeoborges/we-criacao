@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { AlertTriangle, Clock, TrendingUp, Calendar } from 'lucide-react';
+import { AlertTriangle, Clock, TrendingUp } from 'lucide-react';
 import { useTaskrowData } from '@/hooks/useTaskrowData';
 import { useNucleoData, type NucleoStats, type WorkloadWindowKey } from '@/hooks/useNucleoData';
 import { startOfToday, addDays, toYMD, formatDate } from '@/lib/constants';
@@ -14,65 +14,6 @@ function heatColor(intensity: number, alpha = 1): string {
 }
 
 // ── Overview components ───────────────────────────────────────────────────────
-
-function NucleoCard({ n }: { n: NucleoStats }) {
-  const pct = n.total > 0 ? Math.round((n.atrasado / n.total) * 100) : 0;
-  return (
-    <div className="glass-card p-5">
-      <div className="flex items-center gap-2 mb-4">
-        <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ background: n.cor }} />
-        <h3 className="font-semibold text-sm text-foreground truncate flex-1">{n.nome}</h3>
-        <WorkloadBadge
-          alertLevel={n.workload.semana.alertLevel}
-          workloadScore={n.workload.semana.workloadScore}
-          capacity={n.workload.semana.capacity}
-          complexityBreakdown={n.workload.semana.complexityBreakdown}
-        />
-      </div>
-
-      <div className="grid grid-cols-2 gap-3 mb-4">
-        <div className="bg-[hsl(var(--chart-surface))] rounded-lg p-3">
-          <p className="text-2xl font-bold text-foreground">{n.total}</p>
-          <p className="text-xs text-muted-foreground mt-0.5">abertas</p>
-        </div>
-        <div className="bg-[hsl(348_100%_65%/0.1)] border border-[hsl(348_100%_65%/0.2)] rounded-lg p-3">
-          <p className="text-2xl font-bold text-destructive">{n.atrasado}</p>
-          <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1">
-            <AlertTriangle size={10} />atrasadas
-          </p>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-3 gap-2 text-center mb-4">
-        <div>
-          <p className="text-sm font-semibold" style={{ color: n.cor }}>{n.hoje}</p>
-          <p className="text-xs text-muted-foreground">hoje</p>
-        </div>
-        <div>
-          <p className="text-sm font-semibold text-warning">{n.semana}</p>
-          <p className="text-xs text-muted-foreground">semana</p>
-        </div>
-        <div>
-          <p className="text-sm font-semibold text-foreground">{n.quinzena}</p>
-          <p className="text-xs text-muted-foreground">quinzena</p>
-        </div>
-      </div>
-
-      <div>
-        <div className="flex justify-between text-xs text-muted-foreground mb-1">
-          <span>% atrasado</span>
-          <span className={pct > 30 ? 'text-destructive font-medium' : ''}>{pct}%</span>
-        </div>
-        <div className="h-1.5 bg-[hsl(var(--muted))] rounded-full overflow-hidden">
-          <div
-            className="h-full rounded-full transition-all"
-            style={{ width: `${pct}%`, background: pct > 30 ? 'hsl(var(--destructive))' : n.cor }}
-          />
-        </div>
-      </div>
-    </div>
-  );
-}
 
 const WORKLOAD_WINDOWS: { key: WorkloadWindowKey; title: string; helper: string }[] = [
   { key: 'hoje',   title: 'Hoje',        helper: 'Tarefas atrasadas + com prazo hoje vs. capacidade estimada do time.' },
@@ -174,44 +115,6 @@ function BucketCard({
   );
 }
 
-function WeekHeatBar({ n, columnMaxes }: { n: NucleoStats; columnMaxes: number[] }) {
-  const today = startOfToday();
-  const weeks = Array.from({ length: 4 }, (_, wi) => {
-    const start = addDays(today, wi * 7);
-    let count = 0;
-    for (let d = 0; d < 7; d++) count += n.byDay[toYMD(addDays(start, d))] ?? 0;
-    return { label: `S${wi + 1}`, count };
-  });
-
-  return (
-    <div className="flex items-center gap-2 sm:gap-3">
-      <div className="w-16 sm:w-36 text-sm font-medium text-foreground truncate flex items-center gap-2">
-        <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: n.cor }} />
-        <span className="truncate">{n.nome}</span>
-      </div>
-      <div className="flex-1 grid grid-cols-4 gap-1 sm:gap-1.5">
-        {weeks.map(({ label, count }, wi) => {
-          const intensity = columnMaxes[wi] > 0 ? count / columnMaxes[wi] : 0;
-          return (
-            <div
-              key={label}
-              title={`${count} tarefas`}
-              className="h-9 rounded-md flex items-center justify-center text-xs font-medium transition-all"
-              style={{
-                background: count === 0 ? 'hsl(var(--chart-surface))' : heatColor(intensity, Math.max(0.25, intensity * 0.9)),
-                color: count === 0 ? 'hsl(var(--muted-foreground))' : '#fff',
-                border: `1px solid ${count === 0 ? 'hsl(var(--border))' : heatColor(intensity, 0.4)}`,
-              }}
-            >
-              {count > 0 ? count : ''}
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
 // ── Calendário helpers ────────────────────────────────────────────────────────
 
 interface DayInfo {
@@ -281,16 +184,6 @@ export default function TimelinePage() {
         <p className="text-muted-foreground text-sm mt-1">Volume e prazos de entrega por núcleo</p>
       </div>
 
-      {/* Carga de Trabalho */}
-      <div>
-        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">Carga de Trabalho</h3>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          {WORKLOAD_WINDOWS.map((w) => (
-            <WorkloadWindowChart key={w.key} title={w.title} helper={w.helper} nucleos={nucleos} windowKey={w.key} />
-          ))}
-        </div>
-      </div>
-
       {/* Top KPIs */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="glass-card p-4 flex items-center gap-4">
@@ -322,11 +215,13 @@ export default function TimelinePage() {
         </div>
       </div>
 
-      {/* Nucleo Cards */}
+      {/* Carga de Trabalho */}
       <div>
-        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">Núcleos</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {nucleos.map((n) => <NucleoCard key={n.nome} n={n} />)}
+        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">Carga de Trabalho</h3>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          {WORKLOAD_WINDOWS.map((w) => (
+            <WorkloadWindowChart key={w.key} title={w.title} helper={w.helper} nucleos={nucleos} windowKey={w.key} />
+          ))}
         </div>
       </div>
 
@@ -345,79 +240,6 @@ export default function TimelinePage() {
               nucleos={nucleos}
             />
           ))}
-        </div>
-      </div>
-
-      {/* Summary table */}
-      <div className="glass-card overflow-x-auto">
-        <table className="w-full text-sm min-w-[640px]">
-          <thead>
-            <tr className="border-b border-[hsl(var(--border))]">
-              <th className="text-left px-4 py-3 text-muted-foreground font-medium">Núcleo</th>
-              <th className="text-center px-3 py-3 text-[#FF4D6A] font-medium">Atrasado</th>
-              <th className="text-center px-3 py-3 text-[#FF7A45] font-medium">Hoje</th>
-              <th className="text-center px-3 py-3 text-warning font-medium">Semana</th>
-              <th className="text-center px-3 py-3 text-success font-medium">Quinzena</th>
-              <th className="text-center px-3 py-3 text-secondary font-medium">Mês</th>
-              <th className="text-center px-3 py-3 text-primary font-medium">Depois</th>
-              <th className="text-center px-3 py-3 text-muted-foreground font-medium">Total</th>
-            </tr>
-          </thead>
-          <tbody>
-            {nucleos.map((n) => (
-              <tr key={n.nome} className="border-b border-[hsl(var(--border))] hover:bg-[hsl(0_0%_100%/0.02)]">
-                <td className="px-4 py-3 font-medium">
-                  <div className="flex items-center gap-2">
-                    <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: n.cor }} />
-                    {n.nome}
-                  </div>
-                </td>
-                <td className="text-center px-3 py-3 text-[#FF4D6A] font-semibold">{n.atrasado || '—'}</td>
-                <td className="text-center px-3 py-3">{n.hoje || '—'}</td>
-                <td className="text-center px-3 py-3">{n.semana || '—'}</td>
-                <td className="text-center px-3 py-3">{n.quinzena || '—'}</td>
-                <td className="text-center px-3 py-3">{n.mes || '—'}</td>
-                <td className="text-center px-3 py-3 text-muted-foreground">{n.depois || '—'}</td>
-                <td className="text-center px-3 py-3 font-semibold">{n.total}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Próximas 4 semanas */}
-      <div>
-        <div className="flex items-center gap-2 mb-4">
-          <Calendar size={16} className="text-muted-foreground" />
-          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Próximas 4 semanas</h3>
-        </div>
-        <div className="glass-card p-3 sm:p-5 space-y-3">
-          <div className="flex items-center gap-2 sm:gap-3 mb-1">
-            <div className="w-16 sm:w-36" />
-            <div className="flex-1 grid grid-cols-4 gap-1 sm:gap-1.5 text-xs text-center text-muted-foreground">
-              {[1, 2, 3, 4].map((w) => (
-                <span key={w}>
-                  <span className="hidden sm:inline">Semana {w}</span>
-                  <span className="sm:hidden">S{w}</span>
-                </span>
-              ))}
-            </div>
-          </div>
-          {(() => {
-            const today = startOfToday();
-            const columnMaxes = Array.from({ length: 4 }, (_, wi) => {
-              const start = addDays(today, wi * 7);
-              return Math.max(
-                ...nucleos.map((n) => {
-                  let c = 0;
-                  for (let d = 0; d < 7; d++) c += n.byDay[toYMD(addDays(start, d))] ?? 0;
-                  return c;
-                }),
-                1
-              );
-            });
-            return nucleos.map((n) => <WeekHeatBar key={n.nome} n={n} columnMaxes={columnMaxes} />);
-          })()}
         </div>
       </div>
 
