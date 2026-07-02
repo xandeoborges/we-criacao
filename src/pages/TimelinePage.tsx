@@ -13,6 +13,13 @@ function heatColor(intensity: number, alpha = 1): string {
   return `hsla(${hue}, 100%, 55%, ${alpha})`;
 }
 
+// Verde/amarelo/vermelho — mesma paleta usada nos badges de carga de trabalho.
+function heatLevelColor(intensity: number): string {
+  if (intensity >= 0.66) return '#FF4D6A';
+  if (intensity >= 0.33) return '#FFB800';
+  return '#00E5A0';
+}
+
 // ── Overview components ───────────────────────────────────────────────────────
 
 const WORKLOAD_WINDOWS: { key: WorkloadWindowKey; title: string; helper: string }[] = [
@@ -89,6 +96,7 @@ function BucketCard({
       {nucleos.map((n) => {
         const count = n[bucketKey];
         const pct = max > 0 ? (count / max) * 100 : 0;
+        const barColor = heatLevelColor(pct / 100);
         return (
           <div key={n.nome} className="flex items-center gap-3">
             <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: n.cor }} />
@@ -96,12 +104,12 @@ function BucketCard({
             <div className="flex-1 h-2 bg-[hsl(var(--muted))] rounded-full overflow-hidden">
               <div
                 className="h-full rounded-full transition-all"
-                style={{ width: `${pct}%`, background: count > 0 ? color : 'transparent' }}
+                style={{ width: `${pct}%`, background: count > 0 ? barColor : 'transparent' }}
               />
             </div>
             <span
               className="w-10 sm:w-12 text-right text-xs font-semibold tabular-nums"
-              style={{ color: count > 0 ? color : 'hsl(var(--muted-foreground))' }}
+              style={{ color: count > 0 ? barColor : 'hsl(var(--muted-foreground))' }}
             >
               {count}
             </span>
