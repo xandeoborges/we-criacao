@@ -13,11 +13,11 @@ function heatColor(intensity: number, alpha = 1): string {
   return `hsla(${hue}, 100%, 55%, ${alpha})`;
 }
 
-// Verde/amarelo/vermelho — mesma paleta usada nos badges de carga de trabalho.
+// Mesma escala de calor (amarelo → vermelho) do Calendário de Calor, segmentada em 5 faixas.
+const HEAT_STEPS = [0.1, 0.3, 0.5, 0.7, 0.9];
 function heatLevelColor(intensity: number): string {
-  if (intensity >= 0.66) return '#FF4D6A';
-  if (intensity >= 0.33) return '#FFB800';
-  return '#00E5A0';
+  const step = HEAT_STEPS.find((s) => intensity <= s) ?? HEAT_STEPS[HEAT_STEPS.length - 1];
+  return heatColor(step);
 }
 
 // ── Overview components ───────────────────────────────────────────────────────
