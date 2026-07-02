@@ -40,14 +40,14 @@ function WorkloadWindowChart({ title, helper, nucleos, windowKey }: {
               capacity={w.capacity}
               complexityBreakdown={w.complexityBreakdown}
             />
-            <span className="w-20 sm:w-32 text-sm font-medium text-foreground truncate">{n.nome}</span>
+            <span className="w-[6.5rem] sm:w-40 text-[11px] sm:text-sm font-medium text-foreground truncate">{n.nome}</span>
             <div className="flex-1 h-2 bg-[hsl(var(--muted))] rounded-full overflow-hidden">
               <div
                 className="h-full rounded-full transition-all"
                 style={{ width: `${Math.min(pct, 100)}%`, background: barColor }}
               />
             </div>
-            <span className="w-12 text-right text-xs font-semibold tabular-nums" style={{ color: barColor }}>{pct}%</span>
+            <span className="w-10 sm:w-12 text-right text-xs font-semibold tabular-nums" style={{ color: barColor }}>{pct}%</span>
           </div>
         );
       })}
