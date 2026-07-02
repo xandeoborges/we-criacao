@@ -12,9 +12,9 @@ import WorkloadBadge from '@/components/WorkloadBadge';
 const COLUMNS = [
   { key: 'atrasado', label: 'Atrasado',    color: '#FF4D6A', bg: 'rgba(255,77,106,0.08)' },
   { key: 'hoje',     label: 'Hoje',         color: '#FF7A45', bg: 'rgba(255,122,69,0.08)' },
-  { key: 'semana',   label: 'Esta semana',  color: '#FFB800', bg: 'rgba(255,184,0,0.08)' },
-  { key: 'quinzena', label: 'Quinzena',     color: '#00E5A0', bg: 'rgba(0,229,160,0.08)' },
-  { key: 'mes',      label: 'Este mês',     color: '#00D4FF', bg: 'rgba(0,212,255,0.08)' },
+  { key: 'semana',   label: 'Próximos 7 dias',  color: '#FFB800', bg: 'rgba(255,184,0,0.08)' },
+  { key: 'quinzena', label: 'Próximos 15 dias', color: '#00E5A0', bg: 'rgba(0,229,160,0.08)' },
+  { key: 'mes',      label: 'Próximos 30 dias', color: '#00D4FF', bg: 'rgba(0,212,255,0.08)' },
 ] as const;
 
 type ColKey = typeof COLUMNS[number]['key'];

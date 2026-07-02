@@ -17,8 +17,8 @@ function heatColor(intensity: number, alpha = 1): string {
 
 const WORKLOAD_WINDOWS: { key: WorkloadWindowKey; title: string; helper: string }[] = [
   { key: 'hoje',   title: 'Hoje',        helper: 'Tarefas atrasadas + com prazo hoje vs. capacidade estimada do time.' },
-  { key: 'semana', title: 'Esta semana', helper: 'Tarefas atrasadas + hoje + próximos 7 dias vs. capacidade estimada do time.' },
-  { key: 'mes',    title: 'Este mês',    helper: 'Tarefas atrasadas + hoje + próximos 30 dias vs. capacidade estimada do time.' },
+  { key: 'semana', title: 'Próximos 7 dias',  helper: 'Tarefas atrasadas + hoje + próximos 7 dias vs. capacidade estimada do time.' },
+  { key: 'mes',    title: 'Próximos 30 dias', helper: 'Tarefas atrasadas + hoje + próximos 30 dias vs. capacidade estimada do time.' },
 ];
 
 function WorkloadWindowChart({ title, helper, nucleos, windowKey }: {
@@ -60,9 +60,9 @@ function WorkloadWindowChart({ title, helper, nucleos, windowKey }: {
 const BUCKETS = [
   { key: 'atrasado' as const, label: 'Atrasado',   color: '#FF4D6A', bg: 'rgba(255,77,106,0.08)',  border: 'rgba(255,77,106,0.25)' },
   { key: 'hoje'     as const, label: 'Hoje',        color: '#FF7A45', bg: 'rgba(255,122,69,0.08)', border: 'rgba(255,122,69,0.25)' },
-  { key: 'semana'   as const, label: 'Esta semana', color: '#FFB800', bg: 'rgba(255,184,0,0.08)',  border: 'rgba(255,184,0,0.25)'  },
-  { key: 'quinzena' as const, label: 'Quinzena',    color: '#00E5A0', bg: 'rgba(0,229,160,0.08)',  border: 'rgba(0,229,160,0.25)'  },
-  { key: 'mes'      as const, label: 'Este mês',    color: '#00D4FF', bg: 'rgba(0,212,255,0.08)',  border: 'rgba(0,212,255,0.25)'  },
+  { key: 'semana'   as const, label: 'Próximos 7 dias',  color: '#FFB800', bg: 'rgba(255,184,0,0.08)',  border: 'rgba(255,184,0,0.25)'  },
+  { key: 'quinzena' as const, label: 'Próximos 15 dias', color: '#00E5A0', bg: 'rgba(0,229,160,0.08)',  border: 'rgba(0,229,160,0.25)'  },
+  { key: 'mes'      as const, label: 'Próximos 30 dias', color: '#00D4FF', bg: 'rgba(0,212,255,0.08)',  border: 'rgba(0,212,255,0.25)'  },
   { key: 'depois'   as const, label: 'Depois',      color: '#6C63FF', bg: 'rgba(108,99,255,0.08)', border: 'rgba(108,99,255,0.25)' },
 ];
 
