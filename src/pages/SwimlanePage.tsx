@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { ChevronDown, ChevronRight, AlertTriangle, ExternalLink } from 'lucide-react';
+import { ChevronDown, ChevronRight, AlertTriangle, ExternalLink, Filter } from 'lucide-react';
 import { useTaskrowData } from '@/hooks/useTaskrowData';
 import { useNucleoData, getBucket, type NucleoStats } from '@/hooks/useNucleoData';
 import { startOfToday, formatDate } from '@/lib/constants';
-import { type TaskrowTask } from '@/lib/taskrow';
+import { type TaskrowTask, type RequestTypeClassification } from '@/lib/taskrow';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
 } from '@/components/ui/dialog';
@@ -19,9 +19,16 @@ const COLUMNS = [
 
 type ColKey = typeof COLUMNS[number]['key'];
 
+const REQUEST_TYPES: { key: RequestTypeClassification; color: string }[] = [
+  { key: 'Solicitação padrão', color: '#8B93A8' },
+  { key: 'Ajuste interno',     color: '#00D4FF' },
+  { key: 'Ajuste externo',     color: '#FF7A45' },
+];
+
 function TaskCard({ task }: { task: TaskrowTask }) {
   const today = startOfToday();
   const bucket = getBucket(task.DueDate, today);
+  const typeColor = REQUEST_TYPES.find((rt) => rt.key === task.RequestTypeClassificationName)?.color ?? '#8B93A8';
 
   return (
     <Dialog>
@@ -30,20 +37,34 @@ function TaskCard({ task }: { task: TaskrowTask }) {
           <p className="text-xs font-medium text-foreground line-clamp-2 leading-snug group-hover:text-primary transition-colors">
             {task.TaskTitle}
           </p>
-          <p className="text-[10px] text-muted-foreground mt-1.5 truncate">{task.ClientDisplayName}</p>
-          <div className="flex items-center justify-between mt-2">
+          <div className="flex items-center justify-between gap-2 mt-1.5">
+            <p className="text-[10px] text-muted-foreground truncate">{task.ClientDisplayName}</p>
             <span
-              className="text-[10px] font-medium"
-              style={{
-                color: bucket === 'atrasado' ? '#FF4D6A'
-                  : bucket === 'hoje' ? '#FF7A45'
-                  : bucket === 'semana' ? '#FFB800'
-                  : '#00E5A0',
-              }}
+              className="text-[9px] font-medium px-1.5 py-0.5 rounded flex-shrink-0"
+              style={{ background: `${typeColor}1A`, color: typeColor }}
             >
-              {task.DueDate ? formatDate(task.DueDate) : '—'}
+              {task.RequestTypeClassificationName}
             </span>
-            <ExternalLink size={10} className="text-muted-foreground/40 group-hover:text-primary transition-colors" />
+          </div>
+          <p className="text-[10px] text-muted-foreground/70 mt-1 truncate">{task.OwnerUserLogin || '—'}</p>
+          <div className="flex items-center justify-between mt-1.5">
+            <span className="text-[9px] text-muted-foreground/50">
+              Criada {task.CreationDate ? formatDate(task.CreationDate) : '—'}
+            </span>
+            <div className="flex items-center gap-1.5">
+              <span
+                className="text-[10px] font-medium"
+                style={{
+                  color: bucket === 'atrasado' ? '#FF4D6A'
+                    : bucket === 'hoje' ? '#FF7A45'
+                    : bucket === 'semana' ? '#FFB800'
+                    : '#00E5A0',
+                }}
+              >
+                {task.DueDate ? formatDate(task.DueDate) : '—'}
+              </span>
+              <ExternalLink size={10} className="text-muted-foreground/40 group-hover:text-primary transition-colors" />
+            </div>
           </div>
         </div>
       </DialogTrigger>
@@ -77,14 +98,72 @@ function Row({ label, value, accent }: { label: string; value: string; accent?: 
   );
 }
 
+function ColumnTypeFilter({ active, onToggle }: { active: Set<RequestTypeClassification>; onToggle: (type: RequestTypeClassification) => void }) {
+  const [open, setOpen] = useState(false);
+  const hiddenCount = REQUEST_TYPES.length - active.size;
+
+  return (
+    <div className="relative flex-shrink-0">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="relative p-1 rounded hover:bg-[hsl(0_0%_100%/0.06)] transition-colors"
+        title="Filtrar por tipo"
+      >
+        <Filter size={12} className="text-muted-foreground" />
+        {hiddenCount > 0 && (
+          <span className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-primary text-[8px] leading-3 text-white text-center">
+            {hiddenCount}
+          </span>
+        )}
+      </button>
+
+      {open && (
+        <>
+          <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
+          <div className="absolute right-0 top-full mt-1 z-20 bg-[hsl(var(--chart-surface))] border border-[hsl(var(--border))] rounded-lg p-2 shadow-lg min-w-[170px] space-y-0.5">
+            {REQUEST_TYPES.map((rt) => (
+              <label
+                key={rt.key}
+                className="flex items-center gap-2 text-[11px] text-foreground cursor-pointer hover:bg-[hsl(0_0%_100%/0.04)] rounded px-1.5 py-1"
+              >
+                <input
+                  type="checkbox"
+                  checked={active.has(rt.key)}
+                  onChange={() => onToggle(rt.key)}
+                  className="accent-primary"
+                />
+                <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: rt.color }} />
+                {rt.key}
+              </label>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
 function Swimlane({ n, defaultOpen }: { n: NucleoStats; defaultOpen: boolean }) {
   const [open, setOpen] = useState(defaultOpen);
+  const [typeFilters, setTypeFilters] = useState<Record<ColKey, Set<RequestTypeClassification>>>(() => {
+    const init = {} as Record<ColKey, Set<RequestTypeClassification>>;
+    COLUMNS.forEach((c) => { init[c.key] = new Set(REQUEST_TYPES.map((rt) => rt.key)); });
+    return init;
+  });
   const today = startOfToday();
 
   const tasksByCol = COLUMNS.reduce<Record<ColKey, TaskrowTask[]>>((acc, col) => {
     acc[col.key] = n.tasks.filter((t) => getBucket(t.DueDate, today) === col.key);
     return acc;
   }, { atrasado: [], hoje: [], semana: [], quinzena: [], mes: [] });
+
+  const toggleType = (col: ColKey, type: RequestTypeClassification) => {
+    setTypeFilters((prev) => {
+      const next = new Set(prev[col]);
+      if (next.has(type)) next.delete(type); else next.add(type);
+      return { ...prev, [col]: next };
+    });
+  };
 
   const urgentCount = tasksByCol.atrasado.length + tasksByCol.hoje.length;
 
@@ -120,16 +199,19 @@ function Swimlane({ n, defaultOpen }: { n: NucleoStats; defaultOpen: boolean }) 
         <div className="overflow-x-auto border-t border-[hsl(var(--border))]">
           <div className="grid grid-cols-5 gap-px bg-[hsl(var(--border))] min-w-[720px]">
             {COLUMNS.map((col) => {
-              const tasks = tasksByCol[col.key];
+              const tasks = tasksByCol[col.key].filter((t) => typeFilters[col.key].has(t.RequestTypeClassificationName));
               return (
                 <div key={col.key} style={{ background: col.bg }}>
                   {/* Column header */}
                   <div
-                    className="px-3 py-2 border-b border-[hsl(var(--border))]"
+                    className="px-3 py-2 border-b border-[hsl(var(--border))] flex items-center justify-between gap-2"
                     style={{ borderBottomColor: `${col.color}33` }}
                   >
-                    <p className="text-xs font-semibold" style={{ color: col.color }}>{col.label}</p>
-                    <p className="text-xs text-muted-foreground">{tasks.length} tarefa{tasks.length !== 1 ? 's' : ''}</p>
+                    <div className="min-w-0">
+                      <p className="text-xs font-semibold" style={{ color: col.color }}>{col.label}</p>
+                      <p className="text-xs text-muted-foreground">{tasks.length} tarefa{tasks.length !== 1 ? 's' : ''}</p>
+                    </div>
+                    <ColumnTypeFilter active={typeFilters[col.key]} onToggle={(type) => toggleType(col.key, type)} />
                   </div>
 
                   {/* Tasks */}

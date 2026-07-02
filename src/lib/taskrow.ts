@@ -12,7 +12,9 @@ export function parseTaskrowDate(ds: string | null | undefined): Date | null {
   return isNaN(d.getTime()) ? null : d;
 }
 
-function classifyRequestType(name: string): string {
+export type RequestTypeClassification = 'Solicitação padrão' | 'Ajuste interno' | 'Ajuste externo';
+
+function classifyRequestType(name: string): RequestTypeClassification {
   if (name === 'Alteração Interna') return 'Ajuste interno';
   if (name === 'Alteração Cliente') return 'Ajuste externo';
   return 'Solicitação padrão';
@@ -42,7 +44,7 @@ export interface TaskrowTask {
   ClientDisplayName: string;
   FunctionGroupTitle: string;
   RequestTypeName: string;
-  RequestTypeClassificationName: string;
+  RequestTypeClassificationName: RequestTypeClassification;
   DueDate: Date | null;
   ClosingDate: Date | null;
   CreationDate: Date | null;
