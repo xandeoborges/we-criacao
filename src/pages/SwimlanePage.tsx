@@ -29,6 +29,9 @@ function TaskCard({ task }: { task: TaskrowTask }) {
   const today = startOfToday();
   const bucket = getBucket(task.DueDate, today);
   const typeColor = REQUEST_TYPES.find((rt) => rt.key === task.RequestTypeClassificationName)?.color ?? '#8B93A8';
+  const daysLate = bucket === 'atrasado' && task.DueDate
+    ? Math.round((today.getTime() - task.DueDate.getTime()) / 86400000)
+    : null;
 
   return (
     <Dialog>
@@ -62,6 +65,9 @@ function TaskCard({ task }: { task: TaskrowTask }) {
                 }}
               >
                 {task.DueDate ? formatDate(task.DueDate) : '—'}
+                {daysLate !== null && (
+                  <span className="text-[9px] font-normal opacity-80"> ({daysLate} {daysLate === 1 ? 'dia' : 'dias'})</span>
+                )}
               </span>
               <ExternalLink size={10} className="text-muted-foreground/40 group-hover:text-primary transition-colors" />
             </div>
