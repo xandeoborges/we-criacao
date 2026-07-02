@@ -107,7 +107,7 @@ export function useNucleoData(openTasks: TaskrowTask[]): NucleoStats[] {
         const workloadScore = rawWorkload[key].score;
         const capacity = cargoWeightSum * BASE_CAPACITY_BY_WINDOW[key];
         const ratio = capacity > 0 ? workloadScore / capacity : 0;
-        const alertLevel: AlertLevel = ratio < 0.6 ? 'verde' : ratio <= 1 ? 'amarelo' : 'vermelho';
+        const alertLevel: AlertLevel = ratio < 0.7 ? 'verde' : ratio <= 1 ? 'amarelo' : 'vermelho';
         return { workloadScore, capacity, alertLevel, complexityBreakdown: rawWorkload[key].breakdown };
       };
 
