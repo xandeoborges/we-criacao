@@ -167,14 +167,18 @@ export function getCargoWeight(login: string): number {
 // Peso de complexidade por tarefa (tag "BAIXA/MÉDIA/ALTA Complexidade" vinda da API do Taskrow).
 export const COMPLEXITY_WEIGHT: Record<'baixa' | 'media' | 'alta', number> = {
   baixa: 1,
-  media: 2,
-  alta: 3,
+  media: 3,
+  alta: 5,
 };
-export const DEFAULT_COMPLEXITY_WEIGHT = 2; // tarefa sem tag de complexidade
+export const DEFAULT_COMPLEXITY_WEIGHT = 2; // tarefa sem tag de complexidade (peso neutro)
 
 // Quantos pontos de carga (ponderados por complexidade) uma pessoa de peso 1.0 (Pleno) "aguenta"
-// na janela de pressão imediata (atrasado + hoje + esta semana). Ajustável.
-export const BASE_TASKS_PER_CAPACITY = 6;
+// em cada janela de tempo. Constantes independentes por janela — ajustáveis livremente.
+export const BASE_CAPACITY_BY_WINDOW = {
+  hoje: 1,    // atrasado + hoje
+  semana: 6,  // atrasado + hoje + próximos 7 dias
+  mes: 20,    // atrasado + hoje + próximos 30 dias
+};
 
 export function getNucleoByLogin(login: string): string | null {
   // Normalize: lowercase, trim, strip diacritics for matching

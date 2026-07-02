@@ -2,10 +2,18 @@ import { useMemo } from 'react';
 import { type TaskrowTask } from '@/lib/taskrow';
 import {
   getNucleoByLogin, NUCLEO_COLORS, NUCLEO_ORDER, startOfToday, addDays, isSameDay, toYMD,
-  getNucleoMembers, getCargoWeight, COMPLEXITY_WEIGHT, DEFAULT_COMPLEXITY_WEIGHT, BASE_TASKS_PER_CAPACITY,
+  getNucleoMembers, getCargoWeight, COMPLEXITY_WEIGHT, DEFAULT_COMPLEXITY_WEIGHT, BASE_CAPACITY_BY_WINDOW,
 } from '@/lib/constants';
 
 export type AlertLevel = 'verde' | 'amarelo' | 'vermelho';
+export type WorkloadWindowKey = 'hoje' | 'semana' | 'mes';
+
+export interface WorkloadWindow {
+  workloadScore: number;   // soma do peso de complexidade das tarefas na janela
+  capacity: number;        // capacidade estimada do time (peso de cargo × BASE_CAPACITY_BY_WINDOW)
+  alertLevel: AlertLevel;  // verde/amarelo/vermelho = workloadScore / capacity
+  complexityBreakdown: { baixa: number; media: number; alta: number };
+}
 
 export interface NucleoStats {
   nome: string;
@@ -19,10 +27,7 @@ export interface NucleoStats {
   depois: number;       // D+30+ or null
   tasks: TaskrowTask[];
   byDay: Record<string, number>;  // "YYYY-MM-DD" → count (only tasks with DueDate)
-  workloadScore: number;          // soma do peso de complexidade (janela atrasado+hoje+semana)
-  capacity: number;               // capacidade estimada do time (peso de cargo × BASE_TASKS_PER_CAPACITY)
-  alertLevel: AlertLevel;         // verde/amarelo/vermelho = workloadScore / capacity
-  complexityBreakdown: { baixa: number; media: number; alta: number };
+  workload: Record<WorkloadWindowKey, WorkloadWindow>; // alertas de carga: hoje / esta semana / este mês
 }
 
 export type BucketKey = 'atrasado' | 'hoje' | 'semana' | 'quinzena' | 'mes' | 'depois';
@@ -56,8 +61,11 @@ export function useNucleoData(openTasks: TaskrowTask[]): NucleoStats[] {
       const tasks = buckets[nome];
       const byDay: Record<string, number> = {};
       let atrasado = 0, hoje = 0, semana = 0, quinzena = 0, mes = 0, depois = 0;
-      let workloadScore = 0;
-      const complexityBreakdown = { baixa: 0, media: 0, alta: 0 };
+      const rawWorkload: Record<WorkloadWindowKey, { score: number; breakdown: { baixa: number; media: number; alta: number } }> = {
+        hoje: { score: 0, breakdown: { baixa: 0, media: 0, alta: 0 } },
+        semana: { score: 0, breakdown: { baixa: 0, media: 0, alta: 0 } },
+        mes: { score: 0, breakdown: { baixa: 0, media: 0, alta: 0 } },
+      };
 
       for (const t of tasks) {
         const bucket = getBucket(t.DueDate, today);
@@ -73,17 +81,41 @@ export function useNucleoData(openTasks: TaskrowTask[]): NucleoStats[] {
           byDay[key] = (byDay[key] ?? 0) + 1;
         }
 
-        // janela de pressão imediata para o cálculo de carga
-        if (bucket === 'atrasado' || bucket === 'hoje' || bucket === 'semana') {
-          workloadScore += t.Complexity ? COMPLEXITY_WEIGHT[t.Complexity] : DEFAULT_COMPLEXITY_WEIGHT;
-          if (t.Complexity) complexityBreakdown[t.Complexity]++;
+        const isHoje = bucket === 'atrasado' || bucket === 'hoje';
+        const isSemana = isHoje || bucket === 'semana';
+        const isMes = isSemana || bucket === 'quinzena' || bucket === 'mes';
+        const weight = t.Complexity ? COMPLEXITY_WEIGHT[t.Complexity] : DEFAULT_COMPLEXITY_WEIGHT;
+
+        if (isHoje) {
+          rawWorkload.hoje.score += weight;
+          if (t.Complexity) rawWorkload.hoje.breakdown[t.Complexity]++;
+        }
+        if (isSemana) {
+          rawWorkload.semana.score += weight;
+          if (t.Complexity) rawWorkload.semana.breakdown[t.Complexity]++;
+        }
+        if (isMes) {
+          rawWorkload.mes.score += weight;
+          if (t.Complexity) rawWorkload.mes.breakdown[t.Complexity]++;
         }
       }
 
       const members = getNucleoMembers(nome);
-      const capacity = members.reduce((sum, login) => sum + getCargoWeight(login), 0) * BASE_TASKS_PER_CAPACITY;
-      const ratio = capacity > 0 ? workloadScore / capacity : 0;
-      const alertLevel: AlertLevel = ratio < 0.8 ? 'verde' : ratio <= 1.3 ? 'amarelo' : 'vermelho';
+      const cargoWeightSum = members.reduce((sum, login) => sum + getCargoWeight(login), 0);
+
+      const buildWindow = (key: WorkloadWindowKey): WorkloadWindow => {
+        const workloadScore = rawWorkload[key].score;
+        const capacity = cargoWeightSum * BASE_CAPACITY_BY_WINDOW[key];
+        const ratio = capacity > 0 ? workloadScore / capacity : 0;
+        const alertLevel: AlertLevel = ratio < 0.6 ? 'verde' : ratio <= 1 ? 'amarelo' : 'vermelho';
+        return { workloadScore, capacity, alertLevel, complexityBreakdown: rawWorkload[key].breakdown };
+      };
+
+      const workload: Record<WorkloadWindowKey, WorkloadWindow> = {
+        hoje: buildWindow('hoje'),
+        semana: buildWindow('semana'),
+        mes: buildWindow('mes'),
+      };
 
       return {
         nome,
@@ -97,10 +129,7 @@ export function useNucleoData(openTasks: TaskrowTask[]): NucleoStats[] {
         depois,
         tasks,
         byDay,
-        workloadScore,
-        capacity,
-        alertLevel,
-        complexityBreakdown,
+        workload,
       };
     });
   }, [openTasks]);

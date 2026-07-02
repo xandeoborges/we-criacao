@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { AlertTriangle, Clock, TrendingUp, Calendar } from 'lucide-react';
 import { useTaskrowData } from '@/hooks/useTaskrowData';
-import { useNucleoData, type NucleoStats } from '@/hooks/useNucleoData';
+import { useNucleoData, type NucleoStats, type WorkloadWindowKey } from '@/hooks/useNucleoData';
 import { startOfToday, addDays, toYMD, formatDate } from '@/lib/constants';
 import { type TaskrowTask } from '@/lib/taskrow';
 import WorkloadBadge from '@/components/WorkloadBadge';
@@ -23,10 +23,10 @@ function NucleoCard({ n }: { n: NucleoStats }) {
         <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ background: n.cor }} />
         <h3 className="font-semibold text-sm text-foreground truncate flex-1">{n.nome}</h3>
         <WorkloadBadge
-          alertLevel={n.alertLevel}
-          workloadScore={n.workloadScore}
-          capacity={n.capacity}
-          complexityBreakdown={n.complexityBreakdown}
+          alertLevel={n.workload.semana.alertLevel}
+          workloadScore={n.workload.semana.workloadScore}
+          capacity={n.workload.semana.capacity}
+          complexityBreakdown={n.workload.semana.complexityBreakdown}
         />
       </div>
 
@@ -70,6 +70,46 @@ function NucleoCard({ n }: { n: NucleoStats }) {
           />
         </div>
       </div>
+    </div>
+  );
+}
+
+const WORKLOAD_WINDOWS: { key: WorkloadWindowKey; title: string; helper: string }[] = [
+  { key: 'hoje',   title: 'Hoje',        helper: 'Tarefas atrasadas + com prazo hoje vs. capacidade estimada do time.' },
+  { key: 'semana', title: 'Esta semana', helper: 'Tarefas atrasadas + hoje + próximos 7 dias vs. capacidade estimada do time.' },
+  { key: 'mes',    title: 'Este mês',    helper: 'Tarefas atrasadas + hoje + próximos 30 dias vs. capacidade estimada do time.' },
+];
+
+function WorkloadWindowChart({ title, helper, nucleos, windowKey }: {
+  title: string; helper: string; nucleos: NucleoStats[]; windowKey: WorkloadWindowKey;
+}) {
+  return (
+    <div className="glass-card p-4 sm:p-5 space-y-3">
+      <h4 className="text-sm font-semibold text-foreground">{title}</h4>
+      {nucleos.map((n) => {
+        const w = n.workload[windowKey];
+        const pct = w.capacity > 0 ? Math.round((w.workloadScore / w.capacity) * 100) : 0;
+        const barColor = w.alertLevel === 'verde' ? '#00E5A0' : w.alertLevel === 'amarelo' ? '#FFB800' : '#FF4D6A';
+        return (
+          <div key={n.nome} className="flex items-center gap-3">
+            <WorkloadBadge
+              alertLevel={w.alertLevel}
+              workloadScore={w.workloadScore}
+              capacity={w.capacity}
+              complexityBreakdown={w.complexityBreakdown}
+            />
+            <span className="w-20 sm:w-32 text-sm font-medium text-foreground truncate">{n.nome}</span>
+            <div className="flex-1 h-2 bg-[hsl(var(--muted))] rounded-full overflow-hidden">
+              <div
+                className="h-full rounded-full transition-all"
+                style={{ width: `${Math.min(pct, 100)}%`, background: barColor }}
+              />
+            </div>
+            <span className="w-12 text-right text-xs font-semibold tabular-nums" style={{ color: barColor }}>{pct}%</span>
+          </div>
+        );
+      })}
+      <p className="text-[11px] text-muted-foreground/60 pt-1">{helper}</p>
     </div>
   );
 }
@@ -244,32 +284,10 @@ export default function TimelinePage() {
       {/* Carga de Trabalho */}
       <div>
         <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">Carga de Trabalho</h3>
-        <div className="glass-card p-4 sm:p-5 space-y-3">
-          {nucleos.map((n) => {
-            const pct = n.capacity > 0 ? Math.round((n.workloadScore / n.capacity) * 100) : 0;
-            const barColor = n.alertLevel === 'verde' ? '#00E5A0' : n.alertLevel === 'amarelo' ? '#FFB800' : '#FF4D6A';
-            return (
-              <div key={n.nome} className="flex items-center gap-3">
-                <WorkloadBadge
-                  alertLevel={n.alertLevel}
-                  workloadScore={n.workloadScore}
-                  capacity={n.capacity}
-                  complexityBreakdown={n.complexityBreakdown}
-                />
-                <span className="w-24 sm:w-40 text-sm font-medium text-foreground truncate">{n.nome}</span>
-                <div className="flex-1 h-2 bg-[hsl(var(--muted))] rounded-full overflow-hidden">
-                  <div
-                    className="h-full rounded-full transition-all"
-                    style={{ width: `${Math.min(pct, 100)}%`, background: barColor }}
-                  />
-                </div>
-                <span className="w-12 text-right text-xs font-semibold tabular-nums" style={{ color: barColor }}>{pct}%</span>
-              </div>
-            );
-          })}
-          <p className="text-[11px] text-muted-foreground/60 pt-1">
-            Carga ponderada por complexidade das tarefas (atrasado + hoje + esta semana) vs. capacidade estimada do time.
-          </p>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          {WORKLOAD_WINDOWS.map((w) => (
+            <WorkloadWindowChart key={w.key} title={w.title} helper={w.helper} nucleos={nucleos} windowKey={w.key} />
+          ))}
         </div>
       </div>
 

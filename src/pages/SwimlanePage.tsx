@@ -99,10 +99,10 @@ function Swimlane({ n, defaultOpen }: { n: NucleoStats; defaultOpen: boolean }) 
         <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ background: n.cor }} />
         <span className="font-semibold text-sm text-foreground">{n.nome}</span>
         <WorkloadBadge
-          alertLevel={n.alertLevel}
-          workloadScore={n.workloadScore}
-          capacity={n.capacity}
-          complexityBreakdown={n.complexityBreakdown}
+          alertLevel={n.workload.semana.alertLevel}
+          workloadScore={n.workload.semana.workloadScore}
+          capacity={n.workload.semana.capacity}
+          complexityBreakdown={n.workload.semana.complexityBreakdown}
         />
         <span className="ml-1 text-xs text-muted-foreground">{n.total} abertas</span>
         {urgentCount > 0 && (
