@@ -185,7 +185,7 @@ export default function TimelinePage() {
     <div className="p-4 lg:p-8 space-y-6 lg:space-y-8" onClick={() => setTooltip(null)}>
       {/* Header */}
       <div>
-        <h2 className="text-2xl font-bold text-foreground">Overview</h2>
+        <h2 className="text-2xl font-bold text-foreground">Dashboard</h2>
         <p className="text-muted-foreground text-sm mt-1">Volume e prazos de entrega por núcleo</p>
       </div>
 

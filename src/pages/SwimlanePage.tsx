@@ -263,7 +263,7 @@ export default function SwimlanePage() {
   return (
     <div className="p-4 lg:p-8 space-y-4">
       <div>
-        <h2 className="text-2xl font-bold text-foreground">Swimlane</h2>
+        <h2 className="text-2xl font-bold text-foreground">Tarefas</h2>
         <p className="text-muted-foreground text-sm mt-1">Tarefas abertas por núcleo e prazo — clique num card para detalhes</p>
       </div>
 

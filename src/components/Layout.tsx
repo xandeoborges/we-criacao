@@ -5,8 +5,8 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useTaskrowData } from '@/hooks/useTaskrowData';
 
 const NAV = [
-  { to: '/',         label: 'Overview', icon: LayoutDashboard },
-  { to: '/swimlane', label: 'Swimlane', icon: Rows3 },
+  { to: '/',         label: 'Dashboard', icon: LayoutDashboard },
+  { to: '/swimlane', label: 'Tarefas', icon: Rows3 },
 ];
 
 export default function Layout({ children }: { children: React.ReactNode }) {
