@@ -59,18 +59,18 @@ function WorkloadWindowChart({ title, helper, nucleos, windowKey }: {
 // ── Barras components ─────────────────────────────────────────────────────────
 
 const BUCKETS = [
-  { key: 'atrasado' as const, label: 'Atrasado',   color: '#FF4D6A', bg: 'rgba(255,77,106,0.08)',  border: 'rgba(255,77,106,0.25)' },
-  { key: 'hoje'     as const, label: 'Hoje',        color: '#FF7A45', bg: 'rgba(255,122,69,0.08)', border: 'rgba(255,122,69,0.25)' },
-  { key: 'semana'   as const, label: 'Próximos 7 dias',  color: '#FFB800', bg: 'rgba(255,184,0,0.08)',  border: 'rgba(255,184,0,0.25)'  },
-  { key: 'quinzena' as const, label: 'Próximos 15 dias', color: '#00E5A0', bg: 'rgba(0,229,160,0.08)',  border: 'rgba(0,229,160,0.25)'  },
-  { key: 'mes'      as const, label: 'Próximos 30 dias', color: '#00D4FF', bg: 'rgba(0,212,255,0.08)',  border: 'rgba(0,212,255,0.25)'  },
-  { key: 'depois'   as const, label: 'Depois',      color: '#6C63FF', bg: 'rgba(108,99,255,0.08)', border: 'rgba(108,99,255,0.25)' },
+  { key: 'atrasado' as const, label: 'Atrasado',   color: '#FF4D6A' },
+  { key: 'hoje'     as const, label: 'Hoje',        color: '#FF7A45' },
+  { key: 'semana'   as const, label: 'Próximos 7 dias',  color: '#FFB800' },
+  { key: 'quinzena' as const, label: 'Próximos 15 dias', color: '#00E5A0' },
+  { key: 'mes'      as const, label: 'Próximos 30 dias', color: '#00D4FF' },
+  { key: 'depois'   as const, label: 'Depois',      color: '#6C63FF' },
 ];
 
 function BucketCard({
-  label, color, bg, border, nucleos, bucketKey,
+  label, color, nucleos, bucketKey,
 }: {
-  label: string; color: string; bg: string; border: string;
+  label: string; color: string;
   nucleos: NucleoStats[];
   bucketKey: typeof BUCKETS[number]['key'];
 }) {
@@ -78,40 +78,36 @@ function BucketCard({
   const max = Math.max(...nucleos.map((n) => n[bucketKey]), 1);
 
   return (
-    <div className="rounded-xl p-5 flex flex-col gap-1" style={{ background: bg, border: `1px solid ${border}` }}>
-      <div className="flex items-center justify-between mb-3">
+    <div className="glass-card p-4 sm:p-5 space-y-3">
+      <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="w-2.5 h-2.5 rounded-full" style={{ background: color }} />
-          <span className="text-sm font-semibold" style={{ color }}>{label}</span>
+          <h4 className="text-sm font-semibold" style={{ color }}>{label}</h4>
         </div>
-        <span className="text-lg font-bold text-foreground">{total}</span>
+        <span className="text-sm font-bold text-foreground">{total}</span>
       </div>
-      <div className="space-y-1.5">
-        {nucleos.map((n) => {
-          const count = n[bucketKey];
-          const pct = max > 0 ? (count / max) * 100 : 0;
-          return (
-            <div key={n.nome}>
-              <div className="flex items-center gap-1.5 mb-0.5">
-                <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: n.cor }} />
-                <span className="text-xs text-foreground flex-1 truncate leading-tight">{n.nome}</span>
-                <span
-                  className="text-xs font-bold flex-shrink-0 tabular-nums"
-                  style={{ color: count > 0 ? heatColor(pct / 100) : 'hsl(var(--muted-foreground))' }}
-                >
-                  {count > 0 ? count : '—'}
-                </span>
-              </div>
-              <div className="ml-3.5 h-1 bg-[hsl(var(--muted))] rounded-full overflow-hidden">
-                <div
-                  className="h-full rounded-full"
-                  style={{ width: `${pct}%`, background: count > 0 ? heatColor(pct / 100) : 'transparent' }}
-                />
-              </div>
+      {nucleos.map((n) => {
+        const count = n[bucketKey];
+        const pct = max > 0 ? (count / max) * 100 : 0;
+        return (
+          <div key={n.nome} className="flex items-center gap-3">
+            <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: n.cor }} />
+            <span className="w-[6.5rem] sm:w-40 text-[11px] sm:text-sm font-medium text-foreground truncate">{n.nome}</span>
+            <div className="flex-1 h-2 bg-[hsl(var(--muted))] rounded-full overflow-hidden">
+              <div
+                className="h-full rounded-full transition-all"
+                style={{ width: `${pct}%`, background: count > 0 ? color : 'transparent' }}
+              />
             </div>
-          );
-        })}
-      </div>
+            <span
+              className="w-10 sm:w-12 text-right text-xs font-semibold tabular-nums"
+              style={{ color: count > 0 ? color : 'hsl(var(--muted-foreground))' }}
+            >
+              {count}
+            </span>
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -229,15 +225,13 @@ export default function TimelinePage() {
       {/* Bucket grid */}
       <div>
         <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">Tarefas por Prazo</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {BUCKETS.map((b) => (
             <BucketCard
               key={b.key}
               bucketKey={b.key}
               label={b.label}
               color={b.color}
-              bg={b.bg}
-              border={b.border}
               nucleos={nucleos}
             />
           ))}
