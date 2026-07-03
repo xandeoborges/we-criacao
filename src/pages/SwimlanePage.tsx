@@ -25,6 +25,18 @@ const REQUEST_TYPES: { key: RequestTypeClassification; color: string }[] = [
   { key: 'Ajuste externo',     color: '#FF7A45' },
 ];
 
+const COMPLEXITY_LABELS: Record<'baixa' | 'media' | 'alta', string> = {
+  baixa: 'Baixa complexidade',
+  media: 'Média complexidade',
+  alta: 'Alta complexidade',
+};
+
+const COMPLEXITY_COLORS: Record<'baixa' | 'media' | 'alta', string> = {
+  baixa: '#00E5A0',
+  media: '#FFB800',
+  alta: '#FF4D6A',
+};
+
 function TaskCard({ task }: { task: TaskrowTask }) {
   const today = startOfToday();
   const bucket = getBucket(task.DueDate, today);
@@ -49,6 +61,16 @@ function TaskCard({ task }: { task: TaskrowTask }) {
               {task.RequestTypeClassificationName}
             </span>
           </div>
+          {task.Complexity && (
+            <div className="flex justify-end mt-1">
+              <span
+                className="text-[9px] font-medium px-1.5 py-0.5 rounded flex-shrink-0"
+                style={{ background: `${COMPLEXITY_COLORS[task.Complexity]}1A`, color: COMPLEXITY_COLORS[task.Complexity] }}
+              >
+                {COMPLEXITY_LABELS[task.Complexity]}
+              </span>
+            </div>
+          )}
           <p className="text-[10px] text-muted-foreground/70 mt-1 truncate">{task.OwnerUserLogin || '—'}</p>
           <div className="flex items-center justify-between mt-1.5">
             <span className="text-[9px] text-muted-foreground/50">
