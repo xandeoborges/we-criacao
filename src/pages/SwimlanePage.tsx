@@ -48,21 +48,21 @@ function TaskCard({ task }: { task: TaskrowTask }) {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <div className="bg-[hsl(var(--chart-surface))] border border-[hsl(var(--border))] rounded-lg p-3 cursor-pointer hover:border-[hsl(244_94%_69%/0.4)] transition-all group">
+        <div className="bg-[hsl(var(--chart-surface))] border border-[hsl(var(--border))] rounded-lg p-3 cursor-pointer hover:border-[hsl(244_94%_69%/0.4)] transition-all group overflow-hidden">
           <p className="text-xs font-medium text-foreground line-clamp-2 leading-snug group-hover:text-primary transition-colors">
             {task.TaskTitle}
           </p>
-          <div className="flex items-center justify-between gap-2 mt-1.5">
-            <p className="text-[10px] text-muted-foreground truncate">{task.ClientDisplayName}</p>
+          <div className="flex flex-col gap-1 lg:flex-row lg:items-center lg:justify-between lg:gap-2 mt-1.5">
+            <p className="min-w-0 text-[10px] text-muted-foreground truncate">{task.ClientDisplayName}</p>
             <span
-              className="text-[9px] font-medium px-1.5 py-0.5 rounded flex-shrink-0"
+              className="self-start text-[9px] font-medium px-1.5 py-0.5 rounded flex-shrink-0"
               style={{ background: `${typeColor}1A`, color: typeColor }}
             >
               {task.RequestTypeClassificationName}
             </span>
           </div>
           {task.Complexity && (
-            <div className="flex justify-end mt-1">
+            <div className="flex justify-start lg:justify-end mt-1">
               <span
                 className="text-[9px] font-medium px-1.5 py-0.5 rounded flex-shrink-0"
                 style={{ background: `${COMPLEXITY_COLORS[task.Complexity]}1A`, color: COMPLEXITY_COLORS[task.Complexity] }}
@@ -72,7 +72,7 @@ function TaskCard({ task }: { task: TaskrowTask }) {
             </div>
           )}
           <p className="text-[10px] text-muted-foreground/70 mt-1 truncate">{task.OwnerUserLogin || '—'}</p>
-          <div className="flex items-center justify-between mt-1.5">
+          <div className="flex flex-col gap-1 lg:flex-row lg:items-center lg:justify-between mt-1.5">
             <span className="text-[9px] text-muted-foreground/50">
               Criada {task.CreationDate ? formatDate(task.CreationDate) : '—'}
             </span>
@@ -224,12 +224,12 @@ function Swimlane({ n, defaultOpen }: { n: NucleoStats; defaultOpen: boolean }) 
       </button>
 
       {open && (
-        <div className="overflow-x-auto border-t border-[hsl(var(--border))]">
-          <div className="grid grid-cols-5 gap-px bg-[hsl(var(--border))] min-w-[720px]">
+        <div className="lg:overflow-x-auto border-t border-[hsl(var(--border))]">
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-2 lg:gap-px lg:bg-[hsl(var(--border))] lg:min-w-[720px]">
             {COLUMNS.map((col) => {
               const tasks = tasksByCol[col.key].filter((t) => typeFilters[col.key].has(t.RequestTypeClassificationName));
               return (
-                <div key={col.key} style={{ background: col.bg }}>
+                <div key={col.key} className="rounded-lg lg:rounded-none" style={{ background: col.bg }}>
                   {/* Column header */}
                   <div
                     className="px-3 py-2 border-b border-[hsl(var(--border))] flex items-center justify-between gap-2"
