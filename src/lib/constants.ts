@@ -193,6 +193,18 @@ export function getNucleoByLogin(login: string): string | null {
   return NUCLEO_MEMBERS[key] ?? null;
 }
 
+// Cor estável por string (hash simples → matiz HSL), usada para clientes — não há
+// mapa manual de cores por cliente como existe para núcleo (NUCLEO_COLORS).
+export function getColorForString(s: string): string {
+  let hash = 0;
+  for (let i = 0; i < s.length; i++) {
+    hash = (hash << 5) - hash + s.charCodeAt(i);
+    hash |= 0;
+  }
+  const hue = Math.abs(hash) % 360;
+  return `hsl(${hue}, 70%, 60%)`;
+}
+
 export function formatDate(d: Date): string {
   const dd = String(d.getDate()).padStart(2, '0');
   const mm = String(d.getMonth() + 1).padStart(2, '0');
