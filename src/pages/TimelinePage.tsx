@@ -2,23 +2,10 @@ import { useState } from 'react';
 import { AlertTriangle, Clock, TrendingUp } from 'lucide-react';
 import { useTaskrowData } from '@/hooks/useTaskrowData';
 import { useNucleoData, type NucleoStats, type WorkloadWindowKey } from '@/hooks/useNucleoData';
-import { startOfToday, addDays, toYMD, formatDate } from '@/lib/constants';
+import { toYMD, formatDate } from '@/lib/constants';
 import { type TaskrowTask } from '@/lib/taskrow';
 import WorkloadBadge from '@/components/WorkloadBadge';
-
-// ── Shared helpers ────────────────────────────────────────────────────────────
-
-function heatColor(intensity: number, alpha = 1): string {
-  const hue = Math.round(50 * (1 - intensity));
-  return `hsla(${hue}, 100%, 55%, ${alpha})`;
-}
-
-// Mesma escala de calor (amarelo → vermelho) do Calendário de Calor, segmentada em 5 faixas.
-const HEAT_STEPS = [0.1, 0.3, 0.5, 0.7, 0.9];
-function heatLevelColor(intensity: number): string {
-  const step = HEAT_STEPS.find((s) => intensity <= s) ?? HEAT_STEPS[HEAT_STEPS.length - 1];
-  return heatColor(step);
-}
+import { buildDays, heatColor, heatLevelColor } from '@/lib/charts';
 
 // ── Overview components ───────────────────────────────────────────────────────
 
@@ -122,25 +109,7 @@ function BucketCard({
 
 // ── Calendário helpers ────────────────────────────────────────────────────────
 
-interface DayInfo {
-  date: Date; ymd: string; label: string;
-  weekLabel: string; isWeekStart: boolean; isToday: boolean; isWeekend: boolean;
-}
-
 interface TooltipInfo { nucleo: string; date: string; tasks: TaskrowTask[]; x: number; y: number; }
-
-function buildDays(days = 35): DayInfo[] {
-  const today = startOfToday();
-  const SHORT = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
-  let weekNum = 1;
-  return Array.from({ length: days }, (_, i) => {
-    const d = addDays(today, i);
-    const dow = d.getDay();
-    const isWeekStart = dow === 1;
-    if (isWeekStart && i > 0) weekNum++;
-    return { date: d, ymd: toYMD(d), label: `${SHORT[dow]} ${d.getDate()}`, weekLabel: `S${weekNum}`, isWeekStart, isToday: i === 0, isWeekend: dow === 0 || dow === 6 };
-  });
-}
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 
