@@ -4,6 +4,7 @@ import Layout from '@/components/Layout';
 import TimelinePage from '@/pages/TimelinePage';
 import CalendarioPage from '@/pages/CalendarioPage';
 import SwimlanePage from '@/pages/SwimlanePage';
+import ClientesPage from '@/pages/ClientesPage';
 
 const qc = new QueryClient();
 
@@ -16,6 +17,7 @@ export default function App() {
             <Route path="/" element={<TimelinePage />} />
             <Route path="/calendario" element={<CalendarioPage />} />
             <Route path="/swimlane" element={<SwimlanePage />} />
+            <Route path="/clientes" element={<ClientesPage />} />
           </Routes>
         </Layout>
       </BrowserRouter>

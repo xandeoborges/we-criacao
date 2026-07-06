@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Rows3, RefreshCw, Menu, X } from 'lucide-react';
+import { LayoutDashboard, Rows3, Users, RefreshCw, Menu, X } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useTaskrowData } from '@/hooks/useTaskrowData';
 
 const NAV = [
   { to: '/',         label: 'Dashboard', icon: LayoutDashboard },
   { to: '/swimlane', label: 'Tarefas', icon: Rows3 },
+  { to: '/clientes', label: 'Clientes', icon: Users },
 ];
 
 export default function Layout({ children }: { children: React.ReactNode }) {
