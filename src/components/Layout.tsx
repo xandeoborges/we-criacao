@@ -3,6 +3,7 @@ import { NavLink } from 'react-router-dom';
 import { LayoutDashboard, Rows3, Users, RefreshCw, Menu, X } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useTaskrowData } from '@/hooks/useTaskrowData';
+import wetrackLogo from '@/assets/wetrack.jpg';
 
 const NAV = [
   { to: '/',         label: 'Dashboard', icon: LayoutDashboard },
@@ -19,10 +20,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     <div className="flex h-screen overflow-hidden">
       {/* Mobile top bar */}
       <header className="lg:hidden fixed top-0 inset-x-0 z-20 flex items-center justify-between px-4 py-3 bg-[hsl(240_20%_7%)] border-b border-[hsl(var(--border))]">
-        <div>
-          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">WE Agência</p>
-          <h1 className="text-sm font-bold text-foreground">Criação</h1>
-        </div>
+        <img src={wetrackLogo} alt="WTrack" className="h-7 w-auto rounded" />
         <button
           onClick={() => setMobileOpen((v) => !v)}
           className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-[hsl(0_0%_100%/0.06)] transition-colors"
@@ -48,8 +46,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       >
         {/* Logo */}
         <div className="px-5 py-5 border-b border-[hsl(var(--border))]">
-          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">WE Agência</p>
-          <h1 className="text-base font-bold text-foreground mt-0.5">Criação</h1>
+          <img src={wetrackLogo} alt="WTrack" className="h-9 w-auto rounded" />
         </div>
 
         {/* Nav */}
