@@ -34,6 +34,15 @@ export default function ClientesPage() {
     );
   }
 
+  if (dir.order.length === 0) {
+    return (
+      <div className="p-4 lg:p-8 flex items-center gap-3 text-destructive">
+        <AlertTriangle size={20} />
+        <span>Nenhum núcleo encontrado na área Criação — verifique a integração com o Taskrow.</span>
+      </div>
+    );
+  }
+
   return (
     <div className="p-4 lg:p-8 space-y-6 lg:space-y-8">
       <div>

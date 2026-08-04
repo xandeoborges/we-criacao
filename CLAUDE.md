@@ -11,7 +11,7 @@ This project uses **bun** (not npm/yarn).
 - `bun run lint` — oxlint
 - `bun run preview` — preview the production build
 
-There is no test suite in this repo.
+- `bun test` — run the test suite (bun's built-in runner, no extra dependency). Coverage is scoped to the pure functions in `src/lib/` and `src/hooks/` — the UI/component layer has no tests.
 
 ## Architecture
 

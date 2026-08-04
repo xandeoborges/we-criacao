@@ -80,6 +80,15 @@ export default function TimelinePage() {
     );
   }
 
+  if (dir.order.length === 0) {
+    return (
+      <div className="p-4 lg:p-8 flex items-center gap-3 text-destructive">
+        <AlertTriangle size={20} />
+        <span>Nenhum núcleo encontrado na área Criação — verifique a integração com o Taskrow.</span>
+      </div>
+    );
+  }
+
   const totalOpen = nucleos.reduce((s, n) => s + n.total, 0);
   const totalOverdue = nucleos.reduce((s, n) => s + n.atrasado, 0);
   const totalSemana = nucleos.reduce((s, n) => s + n.semana, 0);

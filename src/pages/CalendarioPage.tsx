@@ -92,6 +92,15 @@ export default function CalendarioPage() {
     );
   }
 
+  if (dir.order.length === 0) {
+    return (
+      <div className="p-4 lg:p-8 flex items-center gap-3 text-destructive">
+        <AlertTriangle size={20} />
+        <span>Nenhum núcleo encontrado na área Criação — verifique a integração com o Taskrow.</span>
+      </div>
+    );
+  }
+
   return (
     <div className="p-4 lg:p-8 space-y-6" onClick={() => setTooltip(null)}>
       <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-between">

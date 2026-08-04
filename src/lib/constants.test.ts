@@ -15,8 +15,8 @@ function user(overrides: Partial<TaskrowUser>): TaskrowUser {
 describe('buildNucleoDirectory', () => {
   test('groups users by ApprovalGroup within the Criação department', () => {
     const dir = buildNucleoDirectory([
-      user({ UserLogin: 'Andrew Sousa', ApprovalGroup: 'BORBA - DESIGN' }),
       user({ UserLogin: 'Marcos Hosken', ApprovalGroup: 'HOSKEN/LEANDRO' }),
+      user({ UserLogin: 'Andrew Sousa', ApprovalGroup: 'BORBA - DESIGN' }),
     ]);
     expect(dir.order).toEqual(['BORBA - DESIGN', 'HOSKEN/LEANDRO']);
     expect(dir.membersByNucleo['BORBA - DESIGN']).toEqual(['andrew sousa']);
