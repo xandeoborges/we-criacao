@@ -6,6 +6,14 @@ export function buildTaskrowPath(path: string, params: Record<string, string>): 
   return `/api/v1/${path}${qs ? `?${qs}` : ''}`;
 }
 
+function resolveUrl(path: string, params: Record<string, string>): string {
+  if (import.meta.env.DEV) {
+    return `${API_BASE}${buildTaskrowPath(path, params)}`;
+  }
+  const qs = new URLSearchParams(params).toString();
+  return `/api/taskrow?path=${encodeURIComponent(path)}${qs ? `&${qs}` : ''}`;
+}
+
 export function parseTaskrowDate(ds: string | null | undefined): Date | null {
   if (!ds) return null;
   const match = ds.match(/\/Date\("([^"]+)"\)\//);
@@ -95,9 +103,12 @@ function transformTask(raw: Record<string, unknown>): TaskrowTask {
 }
 
 export async function fetchTaskrowTasks(): Promise<TaskrowData> {
-  const url = import.meta.env.DEV
-    ? `${API_BASE}/api/v1/Dashboard/TasksByGroup?groupID=${GROUP_ID}&hierarchyEnabled=true&closedDays=30&context=1`
-    : `/api/taskrow?groupID=${GROUP_ID}&hierarchyEnabled=true&closedDays=30&context=1`;
+  const url = resolveUrl('Dashboard/TasksByGroup', {
+    groupID: String(GROUP_ID),
+    hierarchyEnabled: 'true',
+    closedDays: '30',
+    context: '1',
+  });
 
   const res = await fetch(url);
   if (!res.ok) throw new Error(`Taskrow API error: ${res.status}`);
@@ -132,4 +143,30 @@ export async function fetchTaskrowTasks(): Promise<TaskrowData> {
     closedTasks: rawClosed.map((t) => transform(t as Record<string, unknown>)),
     delayedTasks: rawDelayed.map((t) => transform(t as Record<string, unknown>)),
   };
+}
+
+export interface TaskrowUser {
+  UserLogin: string;
+  ApprovalGroup: string;
+  FunctionGroupName: string;
+  UserFunctionTitle: string;
+}
+
+function transformUser(raw: Record<string, unknown>): TaskrowUser {
+  return {
+    UserLogin: String(raw.UserLogin || ''),
+    ApprovalGroup: String(raw.ApprovalGroup || ''),
+    FunctionGroupName: String(raw.FunctionGroupName || ''),
+    UserFunctionTitle: String(raw.UserFunctionTitle || ''),
+  };
+}
+
+export async function fetchTaskrowUsers(): Promise<TaskrowUser[]> {
+  const url = resolveUrl('User/ListUsers', {});
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`Taskrow API error: ${res.status}`);
+
+  const data = await res.json();
+  const rawUsers = (data as unknown[]) || [];
+  return rawUsers.map((u) => transformUser(u as Record<string, unknown>));
 }
