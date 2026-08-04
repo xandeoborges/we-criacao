@@ -24,15 +24,16 @@ This is a single-page React 19 + TypeScript + Vite dashboard ("WE Criação") th
    - `Complexity`: parsed from the task's `Tags` string (looks for "baixa/média/alta complexidade"). Subtasks that lack their own complexity tag inherit it from their parent task (Taskrow rarely tags subtasks directly).
    - In dev, requests go through the Vite proxy `/taskrow-api` (configured in `vite.config.ts`, injects the `__identifier` API key header). In production, requests go through the serverless function `api/taskrow.ts`, which proxies to Taskrow server-side (keeps the API key out of the client bundle).
 2. **`src/hooks/useTaskrowData.ts`** — React Query wrapper around `fetchTaskrowTasks` (5 min stale time + auto refetch).
-3. **`src/hooks/useNucleoData.ts`** — the core aggregation hook. Takes the flat task list and, for each núcleo (from `NUCLEO_ORDER`/`NUCLEO_MEMBERS` in `src/lib/constants.ts`), buckets tasks by due-date urgency (`atrasado`/`hoje`/`semana`/`quinzena`/`mes`/`depois`, see `getBucket`) and computes a **workload/capacity score** per time window:
+3. **`src/hooks/useTaskrowUsers.ts`** — React Query wrapper around `fetchTaskrowUsers` (`User/ListUsers`, same 5 min stale time as task data). Each page builds a `NucleoDirectory` from its result via `buildNucleoDirectory()` (`src/lib/constants.ts`).
+4. **`src/hooks/useNucleoData.ts`** — the core aggregation hook. Takes the flat task list and a `NucleoDirectory` and, for each núcleo (`dir.order`), buckets tasks by due-date urgency (`atrasado`/`hoje`/`semana`/`quinzena`/`mes`/`depois`, see `getBucket`) and computes a **workload/capacity score** per time window:
    - Each task contributes a weight based on its `Complexity` (`COMPLEXITY_WEIGHT`: baixa=1, media=3, alta=5, untagged=2).
-   - Each núcleo's capacity is the sum of its members' cargo (role/seniority) weight (`getCargoWeight`, `USER_CARGO` in constants.ts) × a base capacity constant per window (`BASE_CAPACITY_BY_WINDOW`).
+   - Each núcleo's capacity is the sum of its members' cargo (role/seniority) weight (`getCargoWeight(login, dir)`) × a base capacity constant per window (`BASE_CAPACITY_BY_WINDOW`).
    - `workloadScore / capacity` produces an `alertLevel` (`verde` <0.7, `amarelo` 0.7–1, `vermelho` >1), shown via `WorkloadBadge`.
-4. Pages consume `useNucleoData` output to render their views.
+5. Pages consume `useNucleoData`/`useClienteData` output to render their views.
 
 ### Núcleo/member/cargo mapping (`src/lib/constants.ts`)
 
-`NUCLEO_MEMBERS` and `USER_CARGO` are **hand-maintained lookup tables** keyed by normalized (lowercase, accent-stripped) login/display name. There is no automated sync with Taskrow's user list — when team membership or roles change, these tables must be updated manually. This is the most common source of "missing" tasks/badges (a task's owner not matching any entry means it's silently dropped from núcleo aggregation).
+`buildNucleoDirectory(users)` derives the núcleo/cargo mapping live from Taskrow's `User/ListUsers` endpoint (fetched via `useTaskrowUsers()`) — no hand-maintained table. A núcleo is any distinct `ApprovalGroup` value among users whose `FunctionGroupName` is `'Criação'`, excluding the bare `'CRIAÇÃO'` approval group (senior creative leadership — CCOs/ECD — not tied to a specific núcleo). Cargo comes from each user's `UserFunctionTitle`. New núcleos created in Taskrow (a new `ApprovalGroup`) appear automatically on the next fetch, no code change needed. A task's owner not matching any current Taskrow user is still silently dropped from núcleo aggregation, same as before — this should now only happen for genuine data mismatches, not stale team-roster drift.
 
 ### Pages (`src/pages/`) and routing (`src/App.tsx`)
 
