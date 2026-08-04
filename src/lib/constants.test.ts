@@ -36,6 +36,14 @@ describe('buildNucleoDirectory', () => {
     expect(dir.order).toEqual([]);
   });
 
+  test('excludes CONTEÚDO and KLEYTON approval groups', () => {
+    const dir = buildNucleoDirectory([
+      user({ UserLogin: 'Arthur Borel', ApprovalGroup: 'CONTEÚDO' }),
+      user({ UserLogin: 'Kleyton Mourão', ApprovalGroup: 'KLEYTON' }),
+    ]);
+    expect(dir.order).toEqual([]);
+  });
+
   test('assigns a color to every discovered núcleo', () => {
     const dir = buildNucleoDirectory([user({ UserLogin: 'Andrew Sousa', ApprovalGroup: 'BORBA - DESIGN' })]);
     expect(typeof dir.colors['BORBA - DESIGN']).toBe('string');

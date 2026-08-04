@@ -13,7 +13,10 @@ export interface NucleoDirectory {
 }
 
 const CRIACAO_DEPARTMENT = 'Criação';
-const EXCLUDED_APPROVAL_GROUP = 'CRIAÇÃO'; // liderança sênior (CCOs/ECD), não ligada a um núcleo específico
+// Grupos de aprovação da Criação que não devem virar núcleo no dashboard:
+// 'CRIAÇÃO' = liderança sênior (CCOs/ECD), não ligada a um núcleo específico;
+// 'CONTEÚDO' e 'KLEYTON' = excluídos a pedido do time.
+const EXCLUDED_APPROVAL_GROUPS = new Set(['CRIAÇÃO', 'CONTEÚDO', 'KLEYTON']);
 
 export function buildNucleoDirectory(users: TaskrowUser[]): NucleoDirectory {
   const membersByNucleo: Record<string, string[]> = {};
@@ -25,7 +28,7 @@ export function buildNucleoDirectory(users: TaskrowUser[]): NucleoDirectory {
     if (login) cargoByLogin[login] = u.UserFunctionTitle;
 
     if (u.FunctionGroupName !== CRIACAO_DEPARTMENT) continue;
-    if (u.ApprovalGroup === EXCLUDED_APPROVAL_GROUP) continue;
+    if (EXCLUDED_APPROVAL_GROUPS.has(u.ApprovalGroup)) continue;
     if (!u.ApprovalGroup || !login) continue;
 
     const nucleo = u.ApprovalGroup;
