@@ -1,7 +1,9 @@
+import { useMemo } from 'react';
 import { AlertTriangle, Calendar } from 'lucide-react';
 import { useTaskrowData } from '@/hooks/useTaskrowData';
+import { useTaskrowUsers } from '@/hooks/useTaskrowUsers';
 import { useNucleoData, type NucleoStats } from '@/hooks/useNucleoData';
-import { startOfToday, addDays, toYMD } from '@/lib/constants';
+import { startOfToday, addDays, toYMD, buildNucleoDirectory } from '@/lib/constants';
 
 // intensity 0 → amarelo, 1 → vermelho
 function heatColor(intensity: number, alpha = 1): string {
@@ -113,10 +115,12 @@ function WeekHeatBar({ n, columnMaxes }: { n: NucleoStats; columnMaxes: number[]
 }
 
 export default function BarrasPage() {
-  const { data, isLoading, error } = useTaskrowData();
-  const nucleos = useNucleoData(data?.openTasks ?? []);
+  const { data, isLoading: tasksLoading, error: tasksError } = useTaskrowData();
+  const { data: users, isLoading: usersLoading, error: usersError } = useTaskrowUsers();
+  const dir = useMemo(() => buildNucleoDirectory(users ?? []), [users]);
+  const nucleos = useNucleoData(data?.openTasks ?? [], dir);
 
-  if (isLoading) {
+  if (tasksLoading || usersLoading) {
     return (
       <div className="p-4 lg:p-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {Array.from({ length: 6 }).map((_, i) => (
@@ -126,11 +130,11 @@ export default function BarrasPage() {
     );
   }
 
-  if (error) {
+  if (tasksError || usersError) {
     return (
       <div className="p-4 lg:p-8 flex items-center gap-3 text-destructive">
         <AlertTriangle size={20} />
-        <span>Erro ao carregar dados: {error.message}</span>
+        <span>Erro ao carregar dados: {(tasksError ?? usersError)?.message}</span>
       </div>
     );
   }

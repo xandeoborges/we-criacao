@@ -1,14 +1,19 @@
+import { useMemo } from 'react';
 import { AlertTriangle } from 'lucide-react';
 import { useTaskrowData } from '@/hooks/useTaskrowData';
+import { useTaskrowUsers } from '@/hooks/useTaskrowUsers';
 import { useClienteData } from '@/hooks/useClienteData';
+import { buildNucleoDirectory } from '@/lib/constants';
 import TarefasPorPrazoGrid from '@/components/TarefasPorPrazoGrid';
 import HeatmapCalendar from '@/components/HeatmapCalendar';
 
 export default function ClientesPage() {
-  const { data, isLoading, error } = useTaskrowData();
-  const clientes = useClienteData(data?.openTasks ?? []);
+  const { data, isLoading: tasksLoading, error: tasksError } = useTaskrowData();
+  const { data: users, isLoading: usersLoading, error: usersError } = useTaskrowUsers();
+  const dir = useMemo(() => buildNucleoDirectory(users ?? []), [users]);
+  const clientes = useClienteData(data?.openTasks ?? [], dir);
 
-  if (isLoading) {
+  if (tasksLoading || usersLoading) {
     return (
       <div className="p-4 lg:p-8">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
@@ -20,11 +25,11 @@ export default function ClientesPage() {
     );
   }
 
-  if (error) {
+  if (tasksError || usersError) {
     return (
       <div className="p-4 lg:p-8 flex items-center gap-3 text-destructive">
         <AlertTriangle size={20} />
-        <span>Erro ao carregar dados: {error.message}</span>
+        <span>Erro ao carregar dados: {(tasksError ?? usersError)?.message}</span>
       </div>
     );
   }

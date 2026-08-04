@@ -1,6 +1,9 @@
+import { useMemo } from 'react';
 import { AlertTriangle, Clock, TrendingUp } from 'lucide-react';
 import { useTaskrowData } from '@/hooks/useTaskrowData';
+import { useTaskrowUsers } from '@/hooks/useTaskrowUsers';
 import { useNucleoData, type NucleoStats, type WorkloadWindowKey } from '@/hooks/useNucleoData';
+import { buildNucleoDirectory } from '@/lib/constants';
 import WorkloadBadge from '@/components/WorkloadBadge';
 import TarefasPorPrazoGrid from '@/components/TarefasPorPrazoGrid';
 import HeatmapCalendar from '@/components/HeatmapCalendar';
@@ -51,10 +54,12 @@ function WorkloadWindowChart({ title, helper, nucleos, windowKey }: {
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function TimelinePage() {
-  const { data, isLoading, error } = useTaskrowData();
-  const nucleos = useNucleoData(data?.openTasks ?? []);
+  const { data, isLoading: tasksLoading, error: tasksError } = useTaskrowData();
+  const { data: users, isLoading: usersLoading, error: usersError } = useTaskrowUsers();
+  const dir = useMemo(() => buildNucleoDirectory(users ?? []), [users]);
+  const nucleos = useNucleoData(data?.openTasks ?? [], dir);
 
-  if (isLoading) {
+  if (tasksLoading || usersLoading) {
     return (
       <div className="p-4 lg:p-8">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
@@ -66,11 +71,11 @@ export default function TimelinePage() {
     );
   }
 
-  if (error) {
+  if (tasksError || usersError) {
     return (
       <div className="p-4 lg:p-8 flex items-center gap-3 text-destructive">
         <AlertTriangle size={20} />
-        <span>Erro ao carregar dados: {error.message}</span>
+        <span>Erro ao carregar dados: {(tasksError ?? usersError)?.message}</span>
       </div>
     );
   }

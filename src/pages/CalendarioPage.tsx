@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { AlertTriangle } from 'lucide-react';
 import { useTaskrowData } from '@/hooks/useTaskrowData';
+import { useTaskrowUsers } from '@/hooks/useTaskrowUsers';
 import { useNucleoData, type NucleoStats } from '@/hooks/useNucleoData';
-import { startOfToday, addDays, toYMD, formatDate } from '@/lib/constants';
+import { startOfToday, addDays, toYMD, formatDate, buildNucleoDirectory } from '@/lib/constants';
 import { type TaskrowTask } from '@/lib/taskrow';
 
 interface DayInfo {
@@ -58,8 +59,10 @@ interface TooltipInfo {
 }
 
 export default function CalendarioPage() {
-  const { data, isLoading, error } = useTaskrowData();
-  const nucleos = useNucleoData(data?.openTasks ?? []);
+  const { data, isLoading: tasksLoading, error: tasksError } = useTaskrowData();
+  const { data: users, isLoading: usersLoading, error: usersError } = useTaskrowUsers();
+  const dir = useMemo(() => buildNucleoDirectory(users ?? []), [users]);
+  const nucleos = useNucleoData(data?.openTasks ?? [], dir);
   const [tooltip, setTooltip] = useState<TooltipInfo | null>(null);
   const [showWeekends, setShowWeekends] = useState(false);
 
@@ -76,15 +79,15 @@ export default function CalendarioPage() {
     return n.tasks.filter((t) => t.DueDate && toYMD(t.DueDate) === ymd);
   };
 
-  if (isLoading) {
+  if (tasksLoading || usersLoading) {
     return <div className="p-4 lg:p-8"><div className="skeleton-pulse rounded-xl h-96" /></div>;
   }
 
-  if (error) {
+  if (tasksError || usersError) {
     return (
       <div className="p-4 lg:p-8 flex items-center gap-3 text-destructive">
         <AlertTriangle size={20} />
-        <span>Erro ao carregar dados: {error.message}</span>
+        <span>Erro ao carregar dados: {(tasksError ?? usersError)?.message}</span>
       </div>
     );
   }
