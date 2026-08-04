@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { type TaskrowTask } from '@/lib/taskrow';
 import { getBucket } from '@/hooks/useNucleoData';
-import { getNucleoByLogin, getColorForString, startOfToday, toYMD } from '@/lib/constants';
+import { getNucleoByLogin, getColorForString, startOfToday, toYMD, type NucleoDirectory } from '@/lib/constants';
 
 export interface ClienteStats {
   nome: string;
@@ -17,12 +17,12 @@ export interface ClienteStats {
   byDay: Record<string, number>;
 }
 
-export function buildClienteStats(openTasks: TaskrowTask[]): ClienteStats[] {
+export function buildClienteStats(openTasks: TaskrowTask[], dir: NucleoDirectory): ClienteStats[] {
   const today = startOfToday();
   const buckets = new Map<string, TaskrowTask[]>();
 
   for (const task of openTasks) {
-    if (!getNucleoByLogin(task.OwnerUserLogin)) continue; // só área Criação
+    if (!getNucleoByLogin(task.OwnerUserLogin, dir)) continue; // só área Criação
     const cliente = task.ClientDisplayName || 'Sem cliente';
     if (!buckets.has(cliente)) buckets.set(cliente, []);
     buckets.get(cliente)!.push(task);
@@ -65,6 +65,6 @@ export function buildClienteStats(openTasks: TaskrowTask[]): ClienteStats[] {
     });
 }
 
-export function useClienteData(openTasks: TaskrowTask[]): ClienteStats[] {
-  return useMemo(() => buildClienteStats(openTasks), [openTasks]);
+export function useClienteData(openTasks: TaskrowTask[], dir: NucleoDirectory): ClienteStats[] {
+  return useMemo(() => buildClienteStats(openTasks, dir), [openTasks, dir]);
 }
