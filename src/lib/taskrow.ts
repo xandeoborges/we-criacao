@@ -1,6 +1,11 @@
 const API_BASE = '/taskrow-api';
 const GROUP_ID = Number(import.meta.env.VITE_TASKROW_GROUP_ID || 11947);
 
+export function buildTaskrowPath(path: string, params: Record<string, string>): string {
+  const qs = new URLSearchParams(params).toString();
+  return `/api/v1/${path}${qs ? `?${qs}` : ''}`;
+}
+
 export function parseTaskrowDate(ds: string | null | undefined): Date | null {
   if (!ds) return null;
   const match = ds.match(/\/Date\("([^"]+)"\)\//);
