@@ -2,8 +2,11 @@ import type { IncomingMessage, ServerResponse } from 'node:http';
 
 export default async function handler(req: IncomingMessage, res: ServerResponse) {
   const { searchParams } = new URL(req.url || '', 'http://localhost');
+  const path = searchParams.get('path') || 'Dashboard/TasksByGroup';
+  searchParams.delete('path');
+
   const base = process.env.VITE_TASKROW_URL || 'https://we.taskrow.com';
-  const url = `${base}/api/v1/Dashboard/TasksByGroup?${searchParams.toString()}`;
+  const url = `${base}/api/v1/${path}?${searchParams.toString()}`;
 
   const apiRes = await fetch(url, {
     headers: {
