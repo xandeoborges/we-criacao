@@ -19,10 +19,11 @@ This is a single-page React 19 + TypeScript + Vite dashboard ("WE Criação") th
 
 ### Data flow
 
-1. **`src/lib/taskrow.ts`** — fetches raw task data from Taskrow and transforms it into typed `TaskrowTask[]`. Key derived fields:
+1. **`src/lib/taskrow.ts`** — fetches raw task data from Taskrow (`GET /api/v2/tasks/taskPanel/listTasks`, paginated 100/page via `nextToken`, no group filter needed — one unfiltered call returns the whole company's open + recently-closed tasks) and transforms it into typed `TaskrowTask[]`. Key derived fields:
    - `RequestTypeClassificationName`: classifies `RequestTypeName` into `'Solicitação padrão' | 'Ajuste interno' | 'Ajuste externo'`.
    - `Complexity`: parsed from the task's `Tags` string (looks for "baixa/média/alta complexidade"). Subtasks that lack their own complexity tag inherit it from their parent task (Taskrow rarely tags subtasks directly).
-   - In dev, requests go through the Vite proxy `/taskrow-api` (configured in `vite.config.ts`, injects the `__identifier` API key header). In production, requests go through the serverless function `api/taskrow.ts`, which proxies to Taskrow server-side (keeps the API key out of the client bundle).
+   - In dev, requests go through the Vite proxy `/taskrow-api` (configured in `vite.config.ts`, injects the `__identifier` API key header). In production, requests go through the serverless function `api/taskrow.ts`, which proxies to Taskrow server-side (keeps the API key out of the client bundle) — restricted to an explicit allowlist of paths (`ALLOWED_PATHS` in `api/taskrow.ts`).
+   - Note: the older `v1/Dashboard/TasksByGroup` endpoint (the original panel this dashboard was built against) was retired by Taskrow when they shipped their new task panel — it now 404s permanently. `v2/tasks/taskPanel/listTasks` is its replacement; if Taskrow ever asks for group-scoped filtering again, the new API takes explicit `filter.owners.groupIDs[n]` params (no "include subgroups" option — each subgroup ID must be listed), but this app doesn't need that since an unfiltered call already returns everything and núcleo assignment happens client-side via `buildNucleoDirectory`.
 2. **`src/hooks/useTaskrowData.ts`** — React Query wrapper around `fetchTaskrowTasks` (5 min stale time + auto refetch).
 3. **`src/hooks/useTaskrowUsers.ts`** — React Query wrapper around `fetchTaskrowUsers` (`User/ListUsers`, same 5 min stale time as task data). Each page builds a `NucleoDirectory` from its result via `buildNucleoDirectory()` (`src/lib/constants.ts`).
 4. **`src/hooks/useNucleoData.ts`** — the core aggregation hook. Takes the flat task list and a `NucleoDirectory` and, for each núcleo (`dir.order`), buckets tasks by due-date urgency (`atrasado`/`hoje`/`semana`/`quinzena`/`mes`/`depois`, see `getBucket`) and computes a **workload/capacity score** per time window:
@@ -51,7 +52,7 @@ Heat/severity colors are reused consistently across the app: `verde #00E5A0` (lo
 ## Environment variables
 
 Defined in `.env` (gitignored):
-- `VITE_TASKROW_URL`, `VITE_TASKROW_API_KEY`, `VITE_TASKROW_GROUP_ID` — Taskrow API access.
+- `VITE_TASKROW_URL`, `VITE_TASKROW_API_KEY` — Taskrow API access. (`VITE_TASKROW_GROUP_ID` was used only by the retired `v1/Dashboard/TasksByGroup` endpoint — no longer read by the code, safe to leave unset.)
 - `VITE_SUPABASE_*` — present but Supabase does not currently appear to be wired into any page/hook.
 
 ## Deployment

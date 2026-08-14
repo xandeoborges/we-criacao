@@ -1,10 +1,12 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
 
-const ALLOWED_PATHS = new Set(['Dashboard/TasksByGroup', 'User/ListUsers']);
+// Path inclui o prefixo de versão (ex: 'v1/User/ListUsers', 'v2/tasks/taskPanel/listTasks')
+// — o Taskrow tem endpoints v1 e v2 coexistindo, não é sempre a mesma versão.
+const ALLOWED_PATHS = new Set(['v1/User/ListUsers', 'v2/tasks/taskPanel/listTasks']);
 
 export default async function handler(req: IncomingMessage, res: ServerResponse) {
   const { searchParams } = new URL(req.url || '', 'http://localhost');
-  const path = searchParams.get('path') || 'Dashboard/TasksByGroup';
+  const path = searchParams.get('path') || 'v2/tasks/taskPanel/listTasks';
   searchParams.delete('path');
 
   if (!ALLOWED_PATHS.has(path)) {
@@ -15,7 +17,7 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
   }
 
   const base = process.env.VITE_TASKROW_URL || 'https://we.taskrow.com';
-  const url = `${base}/api/v1/${path}?${searchParams.toString()}`;
+  const url = `${base}/api/${path}?${searchParams.toString()}`;
 
   const apiRes = await fetch(url, {
     headers: {
