@@ -9,7 +9,8 @@ function task(overrides: Partial<TaskrowTask>): TaskrowTask {
     ClientDisplayName: 'Cliente', FunctionGroupTitle: 'Criação', RequestTypeName: 'Solicitação Geral',
     RequestTypeClassificationName: 'Solicitação padrão', DueDate: null, ClosingDate: null,
     CreationDate: null, Closed: false, PipelineStep: 'Aberta', OwnerUserLogin: 'Andrew Sousa',
-    JobTitle: 'Job', ProductName: null, EffortEstimation: 0, isSubtask: false, Complexity: null,
+    JobTitle: 'Job', ProductName: null, EffortEstimation: 0, isSubtask: false, ParentTaskID: null,
+    Complexity: null, MainTaskCreationUserLogin: null, MainTaskCreationDate: null,
     ...overrides,
   };
 }

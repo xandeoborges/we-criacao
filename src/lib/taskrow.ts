@@ -67,7 +67,10 @@ export interface TaskrowTask {
   ProductName: string | null;
   EffortEstimation: number;
   isSubtask: boolean;
+  ParentTaskID: number | null;
   Complexity: Complexity | null;
+  MainTaskCreationUserLogin: string | null;
+  MainTaskCreationDate: Date | null;
 }
 
 export interface TaskrowData {
@@ -84,6 +87,7 @@ function transformTask(raw: Record<string, unknown>): TaskrowTask {
   const pipelineStep = (raw.pipelineStep as Record<string, unknown>) || {};
   const parentTask = (raw.parentTask as Record<string, unknown>) || {};
   const requestTypeName = String(requestType.name || '');
+  const parentTaskID = parentTask.taskID ? Number(parentTask.taskID) : null;
 
   return {
     TaskID: Number(raw.taskID),
@@ -104,8 +108,11 @@ function transformTask(raw: Record<string, unknown>): TaskrowTask {
     JobTitle: String(job.jobTitle || ''),
     ProductName: raw.productName ? String(raw.productName) : null,
     EffortEstimation: Number(raw.effortEstimation || 0),
-    isSubtask: !!parentTask.taskID,
+    isSubtask: parentTaskID !== null,
+    ParentTaskID: parentTaskID,
     Complexity: parseComplexity(raw.tags as string | null),
+    MainTaskCreationUserLogin: null,
+    MainTaskCreationDate: null,
   };
 }
 
@@ -143,17 +150,33 @@ export async function fetchTaskrowTasks(): Promise<TaskrowData> {
   // A Taskrow raramente aplica a tag de complexidade nas subtarefas — só na tarefa-pai.
   // Por isso, subtarefas sem tag própria herdam a complexidade da sua tarefa-pai.
   const complexityById = new Map<number, Complexity>();
+  // Quem criou + quando cada tarefa foi criada, para a subtarefa poder mostrar
+  // "quem criou e quando" a sua tarefa principal (tarefa-pai) no popup.
+  const creationInfoById = new Map<number, { userLogin: string; date: Date | null }>();
   for (const raw of rawAll) {
+    const taskID = Number(raw.taskID);
     const c = parseComplexity(raw.tags as string | null);
-    if (c) complexityById.set(Number(raw.taskID), c);
+    if (c) complexityById.set(taskID, c);
+
+    const creationUser = (raw.creationUser as Record<string, unknown>) || {};
+    creationInfoById.set(taskID, {
+      userLogin: String(creationUser.userLogin || ''),
+      date: parseTaskrowDate(raw.creationDate as string | null),
+    });
   }
 
   const transform = (raw: Record<string, unknown>): TaskrowTask => {
     const task = transformTask(raw);
-    if (!task.Complexity && task.isSubtask) {
-      const parentTask = (raw.parentTask as Record<string, unknown>) || {};
-      const inherited = complexityById.get(Number(parentTask.taskID));
-      if (inherited) task.Complexity = inherited;
+    if (task.ParentTaskID !== null) {
+      if (!task.Complexity) {
+        const inherited = complexityById.get(task.ParentTaskID);
+        if (inherited) task.Complexity = inherited;
+      }
+      const mainTaskInfo = creationInfoById.get(task.ParentTaskID);
+      if (mainTaskInfo && mainTaskInfo.userLogin) {
+        task.MainTaskCreationUserLogin = mainTaskInfo.userLogin;
+        task.MainTaskCreationDate = mainTaskInfo.date;
+      }
     }
     return task;
   };

@@ -112,6 +112,12 @@ function TaskCard({ task }: { task: TaskrowTask }) {
           {task.JobTitle && <Row label="Job"    value={task.JobTitle} />}
           {task.ProductName && <Row label="Produto" value={task.ProductName} />}
           <Row label="Tarefa nº"     value={`#${task.TaskNumber}`} />
+          {task.isSubtask && task.MainTaskCreationUserLogin && (
+            <Row
+              label="Tarefa principal"
+              value={`Criada por ${task.MainTaskCreationUserLogin}${task.MainTaskCreationDate ? ` em ${formatDate(task.MainTaskCreationDate)}` : ''}`}
+            />
+          )}
         </div>
       </DialogContent>
     </Dialog>
