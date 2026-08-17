@@ -103,6 +103,12 @@ export function formatDate(d: Date): string {
   return `${dd}/${mm}/${yyyy}`;
 }
 
+export function formatDateTime(d: Date): string {
+  const hh = String(d.getHours()).padStart(2, '0');
+  const min = String(d.getMinutes()).padStart(2, '0');
+  return `${formatDate(d)} às ${hh}:${min}`;
+}
+
 export function startOfToday(): Date {
   const n = new Date();
   return new Date(n.getFullYear(), n.getMonth(), n.getDate());

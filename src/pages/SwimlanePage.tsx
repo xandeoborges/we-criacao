@@ -3,7 +3,7 @@ import { ChevronDown, ChevronRight, AlertTriangle, ExternalLink, Filter } from '
 import { useTaskrowData } from '@/hooks/useTaskrowData';
 import { useTaskrowUsers } from '@/hooks/useTaskrowUsers';
 import { useNucleoData, getBucket, type NucleoStats } from '@/hooks/useNucleoData';
-import { startOfToday, formatDate, buildNucleoDirectory } from '@/lib/constants';
+import { startOfToday, formatDate, formatDateTime, buildNucleoDirectory } from '@/lib/constants';
 import { type TaskrowTask, type RequestTypeClassification } from '@/lib/taskrow';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
@@ -115,7 +115,7 @@ function TaskCard({ task }: { task: TaskrowTask }) {
           {task.isSubtask && task.MainTaskCreationUserLogin && (
             <Row
               label="Tarefa principal"
-              value={`Criada por ${task.MainTaskCreationUserLogin}${task.MainTaskCreationDate ? ` em ${formatDate(task.MainTaskCreationDate)}` : ''}`}
+              value={`Criada por ${task.MainTaskCreationUserLogin}${task.MainTaskCreationDate ? ` em ${formatDateTime(task.MainTaskCreationDate)}` : ''}`}
             />
           )}
         </div>
