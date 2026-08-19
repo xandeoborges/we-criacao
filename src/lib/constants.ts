@@ -15,8 +15,8 @@ export interface NucleoDirectory {
 const CRIACAO_DEPARTMENT = 'Criação';
 // Grupos de aprovação da Criação que não devem virar núcleo no dashboard:
 // 'CRIAÇÃO' = liderança sênior (CCOs/ECD), não ligada a um núcleo específico;
-// 'CONTEÚDO' e 'KLEYTON' = excluídos a pedido do time.
-const EXCLUDED_APPROVAL_GROUPS = new Set(['CRIAÇÃO', 'CONTEÚDO', 'KLEYTON']);
+// 'CONTEÚDO', 'KLEYTON' e 'OPERAÇÕES' = excluídos a pedido do time.
+const EXCLUDED_APPROVAL_GROUPS = new Set(['CRIAÇÃO', 'CONTEÚDO', 'KLEYTON', 'OPERAÇÕES']);
 
 export function buildNucleoDirectory(users: TaskrowUser[]): NucleoDirectory {
   const membersByNucleo: Record<string, string[]> = {};

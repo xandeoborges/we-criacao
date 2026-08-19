@@ -36,10 +36,11 @@ describe('buildNucleoDirectory', () => {
     expect(dir.order).toEqual([]);
   });
 
-  test('excludes CONTEÚDO and KLEYTON approval groups', () => {
+  test('excludes CONTEÚDO, KLEYTON and OPERAÇÕES approval groups', () => {
     const dir = buildNucleoDirectory([
       user({ UserLogin: 'Arthur Borel', ApprovalGroup: 'CONTEÚDO' }),
       user({ UserLogin: 'Kleyton Mourão', ApprovalGroup: 'KLEYTON' }),
+      user({ UserLogin: 'Caio Cocozza', ApprovalGroup: 'OPERAÇÕES' }),
     ]);
     expect(dir.order).toEqual([]);
   });
