@@ -1,16 +1,13 @@
-import { useMemo } from 'react';
 import { AlertTriangle } from 'lucide-react';
 import { useTaskrowData } from '@/hooks/useTaskrowData';
-import { useTaskrowUsers } from '@/hooks/useTaskrowUsers';
+import { useNucleoDirectory } from '@/hooks/useNucleoDirectory';
 import { useClienteData } from '@/hooks/useClienteData';
-import { buildNucleoDirectory } from '@/lib/constants';
 import TarefasPorPrazoGrid from '@/components/TarefasPorPrazoGrid';
 import HeatmapCalendar from '@/components/HeatmapCalendar';
 
 export default function ClientesPage() {
   const { data, isLoading: tasksLoading, error: tasksError } = useTaskrowData();
-  const { data: users, isLoading: usersLoading, error: usersError } = useTaskrowUsers();
-  const dir = useMemo(() => buildNucleoDirectory(users ?? []), [users]);
+  const { data: dir, isLoading: usersLoading, error: usersError } = useNucleoDirectory();
   const clientes = useClienteData(data?.openTasks ?? [], dir);
 
   if (tasksLoading || usersLoading) {

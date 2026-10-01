@@ -2,7 +2,11 @@ import type { IncomingMessage, ServerResponse } from 'node:http';
 
 // Path inclui o prefixo de versão (ex: 'v1/User/ListUsers', 'v2/tasks/taskPanel/listTasks')
 // — o Taskrow tem endpoints v1 e v2 coexistindo, não é sempre a mesma versão.
-const ALLOWED_PATHS = new Set(['v1/User/ListUsers', 'v2/tasks/taskPanel/listTasks']);
+const ALLOWED_PATHS = new Set([
+  'v1/User/ListUsers',
+  'v1/Administrative/ListGroups',
+  'v2/tasks/taskPanel/listTasks',
+]);
 
 export default async function handler(req: IncomingMessage, res: ServerResponse) {
   const { searchParams } = new URL(req.url || '', 'http://localhost');

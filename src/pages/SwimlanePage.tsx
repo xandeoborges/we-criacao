@@ -1,9 +1,9 @@
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { ChevronDown, ChevronRight, AlertTriangle, ExternalLink, Filter } from 'lucide-react';
 import { useTaskrowData } from '@/hooks/useTaskrowData';
-import { useTaskrowUsers } from '@/hooks/useTaskrowUsers';
+import { useNucleoDirectory } from '@/hooks/useNucleoDirectory';
 import { useNucleoData, getBucket, type NucleoStats } from '@/hooks/useNucleoData';
-import { startOfToday, formatDate, formatDateTime, buildNucleoDirectory } from '@/lib/constants';
+import { startOfToday, formatDate, formatDateTime } from '@/lib/constants';
 import { type TaskrowTask, type RequestTypeClassification } from '@/lib/taskrow';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
@@ -268,8 +268,7 @@ function Swimlane({ n, defaultOpen }: { n: NucleoStats; defaultOpen: boolean }) 
 
 export default function SwimlanePage() {
   const { data, isLoading: tasksLoading, error: tasksError } = useTaskrowData();
-  const { data: users, isLoading: usersLoading, error: usersError } = useTaskrowUsers();
-  const dir = useMemo(() => buildNucleoDirectory(users ?? []), [users]);
+  const { data: dir, isLoading: usersLoading, error: usersError } = useNucleoDirectory();
   const nucleos = useNucleoData(data?.openTasks ?? [], dir);
 
   if (tasksLoading || usersLoading) {

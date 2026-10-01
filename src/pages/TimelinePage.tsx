@@ -1,9 +1,7 @@
-import { useMemo } from 'react';
 import { AlertTriangle, Clock, TrendingUp } from 'lucide-react';
 import { useTaskrowData } from '@/hooks/useTaskrowData';
-import { useTaskrowUsers } from '@/hooks/useTaskrowUsers';
+import { useNucleoDirectory } from '@/hooks/useNucleoDirectory';
 import { useNucleoData, type NucleoStats, type WorkloadWindowKey } from '@/hooks/useNucleoData';
-import { buildNucleoDirectory } from '@/lib/constants';
 import WorkloadBadge from '@/components/WorkloadBadge';
 import TarefasPorPrazoGrid from '@/components/TarefasPorPrazoGrid';
 import HeatmapCalendar from '@/components/HeatmapCalendar';
@@ -55,8 +53,7 @@ function WorkloadWindowChart({ title, helper, nucleos, windowKey }: {
 
 export default function TimelinePage() {
   const { data, isLoading: tasksLoading, error: tasksError } = useTaskrowData();
-  const { data: users, isLoading: usersLoading, error: usersError } = useTaskrowUsers();
-  const dir = useMemo(() => buildNucleoDirectory(users ?? []), [users]);
+  const { data: dir, isLoading: usersLoading, error: usersError } = useNucleoDirectory();
   const nucleos = useNucleoData(data?.openTasks ?? [], dir);
 
   if (tasksLoading || usersLoading) {

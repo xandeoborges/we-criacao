@@ -191,7 +191,6 @@ export async function fetchTaskrowTasks(): Promise<TaskrowData> {
 
 export interface TaskrowUser {
   UserLogin: string;
-  ApprovalGroup: string;
   FunctionGroupName: string;
   UserFunctionTitle: string;
 }
@@ -199,7 +198,6 @@ export interface TaskrowUser {
 function transformUser(raw: Record<string, unknown>): TaskrowUser {
   return {
     UserLogin: String(raw.UserLogin || ''),
-    ApprovalGroup: String(raw.ApprovalGroup || ''),
     FunctionGroupName: String(raw.FunctionGroupName || ''),
     UserFunctionTitle: String(raw.UserFunctionTitle || ''),
   };
@@ -213,4 +211,36 @@ export async function fetchTaskrowUsers(): Promise<TaskrowUser[]> {
   const data = await res.json();
   const rawUsers = (data as unknown[]) || [];
   return rawUsers.map((u) => transformUser(u as Record<string, unknown>));
+}
+
+// Grupo de aprovação do Taskrow (groupTypeID=2), em árvore (um grupo pode ter subgrupos
+// aninhados em `Groups`). É a fonte correta de "a qual núcleo esta pessoa pertence" —
+// o campo ApprovalGroup antes exposto em User/ListUsers existe mas pode ficar desatualizado
+// quando alguém é movido de grupo (visto em produção: 5 pessoas movidas para um novo núcleo
+// continuavam com o ApprovalGroup antigo nessa outra API, enquanto esta árvore já refletia
+// a posição correta).
+export interface TaskrowGroup {
+  GroupName: string;
+  Members: string[]; // UserLogin de cada membro direto deste grupo (não inclui subgrupos)
+  Groups: TaskrowGroup[];
+}
+
+function transformGroup(raw: Record<string, unknown>): TaskrowGroup {
+  const members = (raw.Members as Record<string, unknown>[]) || [];
+  const subgroups = (raw.Groups as Record<string, unknown>[]) || [];
+  return {
+    GroupName: String(raw.GroupName || ''),
+    Members: members.map((m) => String(m.UserLogin || '')),
+    Groups: subgroups.map(transformGroup),
+  };
+}
+
+export async function fetchTaskrowGroups(): Promise<TaskrowGroup[]> {
+  const url = resolveUrl('v1/Administrative/ListGroups', { groupTypeID: '2' });
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`Taskrow API error: ${res.status}`);
+
+  const data = await res.json();
+  const rawGroups = (data.Groups as Record<string, unknown>[]) || [];
+  return rawGroups.map(transformGroup);
 }

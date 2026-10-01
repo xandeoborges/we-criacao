@@ -1,9 +1,9 @@
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { AlertTriangle } from 'lucide-react';
 import { useTaskrowData } from '@/hooks/useTaskrowData';
-import { useTaskrowUsers } from '@/hooks/useTaskrowUsers';
+import { useNucleoDirectory } from '@/hooks/useNucleoDirectory';
 import { useNucleoData, type NucleoStats } from '@/hooks/useNucleoData';
-import { startOfToday, addDays, toYMD, formatDate, buildNucleoDirectory } from '@/lib/constants';
+import { startOfToday, addDays, toYMD, formatDate } from '@/lib/constants';
 import { type TaskrowTask } from '@/lib/taskrow';
 
 interface DayInfo {
@@ -60,8 +60,7 @@ interface TooltipInfo {
 
 export default function CalendarioPage() {
   const { data, isLoading: tasksLoading, error: tasksError } = useTaskrowData();
-  const { data: users, isLoading: usersLoading, error: usersError } = useTaskrowUsers();
-  const dir = useMemo(() => buildNucleoDirectory(users ?? []), [users]);
+  const { data: dir, isLoading: usersLoading, error: usersError } = useNucleoDirectory();
   const nucleos = useNucleoData(data?.openTasks ?? [], dir);
   const [tooltip, setTooltip] = useState<TooltipInfo | null>(null);
   const [showWeekends, setShowWeekends] = useState(false);

@@ -1,7 +1,7 @@
 import { describe, test, expect } from 'bun:test';
 import { buildNucleoStats } from './useNucleoData';
 import { buildNucleoDirectory } from '@/lib/constants';
-import type { TaskrowTask, TaskrowUser } from '@/lib/taskrow';
+import type { TaskrowTask, TaskrowUser, TaskrowGroup } from '@/lib/taskrow';
 
 function task(overrides: Partial<TaskrowTask>): TaskrowTask {
   return {
@@ -17,14 +17,21 @@ function task(overrides: Partial<TaskrowTask>): TaskrowTask {
 
 function user(overrides: Partial<TaskrowUser>): TaskrowUser {
   return {
-    UserLogin: 'Andrew Sousa', ApprovalGroup: 'BORBA - DESIGN', FunctionGroupName: 'Criação',
+    UserLogin: 'Andrew Sousa', FunctionGroupName: 'Criação',
     UserFunctionTitle: 'Diretor(a) de Arte Sênior', ...overrides,
   };
 }
 
+function group(overrides: Partial<TaskrowGroup> & { GroupName: string }): TaskrowGroup {
+  return { Members: [], Groups: [], ...overrides };
+}
+
 describe('buildNucleoStats', () => {
   test('buckets a task into the núcleo of its owner', () => {
-    const dir = buildNucleoDirectory([user({})]);
+    const dir = buildNucleoDirectory(
+      [user({})],
+      [group({ GroupName: 'BORBA - DESIGN', Members: ['Andrew Sousa'] })]
+    );
     const stats = buildNucleoStats([task({ OwnerUserLogin: 'Andrew Sousa' })], dir);
     expect(stats).toHaveLength(1);
     expect(stats[0].nome).toBe('BORBA - DESIGN');
@@ -32,16 +39,22 @@ describe('buildNucleoStats', () => {
   });
 
   test('drops a task whose owner has no matching núcleo', () => {
-    const dir = buildNucleoDirectory([user({})]);
+    const dir = buildNucleoDirectory(
+      [user({})],
+      [group({ GroupName: 'BORBA - DESIGN', Members: ['Andrew Sousa'] })]
+    );
     const stats = buildNucleoStats([task({ OwnerUserLogin: 'Alguém Sem Núcleo' })], dir);
     expect(stats[0].total).toBe(0);
   });
 
   test('produces one entry per known núcleo even with zero tasks', () => {
-    const dir = buildNucleoDirectory([
-      user({ UserLogin: 'Andrew Sousa', ApprovalGroup: 'BORBA - DESIGN' }),
-      user({ UserLogin: 'Marcos Hosken', ApprovalGroup: 'HOSKEN/LEANDRO' }),
-    ]);
+    const dir = buildNucleoDirectory(
+      [user({ UserLogin: 'Andrew Sousa' }), user({ UserLogin: 'Marcos Hosken' })],
+      [
+        group({ GroupName: 'BORBA - DESIGN', Members: ['Andrew Sousa'] }),
+        group({ GroupName: 'HOSKEN/LEANDRO', Members: ['Marcos Hosken'] }),
+      ]
+    );
     const stats = buildNucleoStats([], dir);
     expect(stats.map((s) => s.nome)).toEqual(['BORBA - DESIGN', 'HOSKEN/LEANDRO']);
     expect(stats.every((s) => s.total === 0)).toBe(true);

@@ -1,9 +1,8 @@
-import { useMemo } from 'react';
 import { AlertTriangle, Calendar } from 'lucide-react';
 import { useTaskrowData } from '@/hooks/useTaskrowData';
-import { useTaskrowUsers } from '@/hooks/useTaskrowUsers';
+import { useNucleoDirectory } from '@/hooks/useNucleoDirectory';
 import { useNucleoData, type NucleoStats } from '@/hooks/useNucleoData';
-import { startOfToday, addDays, toYMD, buildNucleoDirectory } from '@/lib/constants';
+import { startOfToday, addDays, toYMD } from '@/lib/constants';
 
 // intensity 0 → amarelo, 1 → vermelho
 function heatColor(intensity: number, alpha = 1): string {
@@ -116,8 +115,7 @@ function WeekHeatBar({ n, columnMaxes }: { n: NucleoStats; columnMaxes: number[]
 
 export default function BarrasPage() {
   const { data, isLoading: tasksLoading, error: tasksError } = useTaskrowData();
-  const { data: users, isLoading: usersLoading, error: usersError } = useTaskrowUsers();
-  const dir = useMemo(() => buildNucleoDirectory(users ?? []), [users]);
+  const { data: dir, isLoading: usersLoading, error: usersError } = useNucleoDirectory();
   const nucleos = useNucleoData(data?.openTasks ?? [], dir);
 
   if (tasksLoading || usersLoading) {

@@ -1,7 +1,7 @@
 import { describe, test, expect } from 'bun:test';
 import { buildClienteStats } from './useClienteData';
 import { buildNucleoDirectory } from '@/lib/constants';
-import type { TaskrowTask, TaskrowUser } from '@/lib/taskrow';
+import type { TaskrowTask, TaskrowUser, TaskrowGroup } from '@/lib/taskrow';
 
 function task(overrides: Partial<TaskrowTask>): TaskrowTask {
   return {
@@ -17,14 +17,20 @@ function task(overrides: Partial<TaskrowTask>): TaskrowTask {
 
 function user(overrides: Partial<TaskrowUser>): TaskrowUser {
   return {
-    UserLogin: 'Andrew Sousa', ApprovalGroup: 'BORBA - DESIGN', FunctionGroupName: 'Criação',
+    UserLogin: 'Andrew Sousa', FunctionGroupName: 'Criação',
     UserFunctionTitle: 'Diretor(a) de Arte Sênior', ...overrides,
   };
 }
 
+function group(overrides: Partial<TaskrowGroup> & { GroupName: string }): TaskrowGroup {
+  return { Members: [], Groups: [], ...overrides };
+}
+
+const BORBA_DESIGN_GROUP = group({ GroupName: 'BORBA - DESIGN', Members: ['Andrew Sousa'] });
+
 describe('buildClienteStats', () => {
   test('groups tasks by client, keeping only owners with a known núcleo', () => {
-    const dir = buildNucleoDirectory([user({})]);
+    const dir = buildNucleoDirectory([user({})], [BORBA_DESIGN_GROUP]);
     const stats = buildClienteStats([
       task({ OwnerUserLogin: 'Andrew Sousa', ClientDisplayName: 'Acme' }),
       task({ OwnerUserLogin: 'Sem Nucleo', ClientDisplayName: 'Beta' }),
@@ -34,7 +40,7 @@ describe('buildClienteStats', () => {
   });
 
   test('falls back to "Sem cliente" when ClientDisplayName is empty', () => {
-    const dir = buildNucleoDirectory([user({})]);
+    const dir = buildNucleoDirectory([user({})], [BORBA_DESIGN_GROUP]);
     const stats = buildClienteStats([task({ OwnerUserLogin: 'Andrew Sousa', ClientDisplayName: '' })], dir);
     expect(stats[0].nome).toBe('Sem cliente');
   });

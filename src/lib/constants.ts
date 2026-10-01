@@ -1,4 +1,4 @@
-import type { TaskrowUser } from '@/lib/taskrow';
+import type { TaskrowUser, TaskrowGroup } from '@/lib/taskrow';
 
 export function normalize(s: string): string {
   return s.toLowerCase().trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
@@ -14,24 +14,42 @@ export interface NucleoDirectory {
 
 const CRIACAO_DEPARTMENT = 'Criação';
 // Grupos de aprovação da Criação que não devem virar núcleo no dashboard:
-// 'CRIAÇÃO' = liderança sênior (CCOs/ECD), não ligada a um núcleo específico;
-// 'CONTEÚDO', 'KLEYTON' e 'OPERAÇÕES' = excluídos a pedido do time.
+// 'CRIAÇÃO' e 'KLEYTON' = nós intermediários de liderança na árvore de grupos (CCOs/ECD),
+// não são núcleos de verdade; 'CONTEÚDO' e 'OPERAÇÕES' = excluídos a pedido do time.
 const EXCLUDED_APPROVAL_GROUPS = new Set(['CRIAÇÃO', 'CONTEÚDO', 'KLEYTON', 'OPERAÇÕES']);
 
-export function buildNucleoDirectory(users: TaskrowUser[]): NucleoDirectory {
+// Achata a árvore de grupos (com subgrupos aninhados) num mapa login → nome do grupo
+// direto (o núcleo), usando apenas membros diretos de cada grupo — não inclui os membros
+// dos subgrupos no grupo pai.
+function flattenGroupMembership(groups: TaskrowGroup[]): Record<string, string> {
+  const result: Record<string, string> = {};
+  const walk = (group: TaskrowGroup) => {
+    for (const login of group.Members) {
+      const n = normalize(login);
+      if (n) result[n] = group.GroupName;
+    }
+    group.Groups.forEach(walk);
+  };
+  groups.forEach(walk);
+  return result;
+}
+
+export function buildNucleoDirectory(users: TaskrowUser[], groups: TaskrowGroup[]): NucleoDirectory {
   const membersByNucleo: Record<string, string[]> = {};
   const nucleoByLogin: Record<string, string> = {};
   const cargoByLogin: Record<string, string> = {};
+  const groupByLogin = flattenGroupMembership(groups);
 
   for (const u of users) {
     const login = normalize(u.UserLogin);
     if (login) cargoByLogin[login] = u.UserFunctionTitle;
 
     if (u.FunctionGroupName !== CRIACAO_DEPARTMENT) continue;
-    if (EXCLUDED_APPROVAL_GROUPS.has(u.ApprovalGroup)) continue;
-    if (!u.ApprovalGroup || !login) continue;
+    if (!login) continue;
 
-    const nucleo = u.ApprovalGroup;
+    const nucleo = groupByLogin[login];
+    if (!nucleo || EXCLUDED_APPROVAL_GROUPS.has(nucleo)) continue;
+
     if (!membersByNucleo[nucleo]) membersByNucleo[nucleo] = [];
     membersByNucleo[nucleo].push(login);
     nucleoByLogin[login] = nucleo;
